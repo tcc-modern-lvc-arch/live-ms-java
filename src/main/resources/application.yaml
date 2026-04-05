@@ -1,0 +1,117 @@
+# Spring Application Configuration
+spring:
+  application:
+    name: live-ms-java
+
+  # Virtual Threads: Enables Project Loom support for lightweight threading (requires Java 21+)
+  threads:
+    virtual:
+      enabled: true
+
+  # Redis Configuration: Used for streaming and data persistence
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 10000ms
+
+  # API Versioning (Spring Boot 4 native support)
+  mvc:
+    apiversion:
+      default: "1.0"
+      supported: "1.0"
+      use.header: "X-API-Version"
+
+  config:
+    import: "vault://"
+
+  # Spring Cloud Circuit Breaker: Enables Resilience4j integration
+  cloud:
+    vault:
+      host: localhost
+      port: 8200
+      authentication: TOKEN
+      token: tcc-local-root-token
+      kv:
+        enabled: true
+        backend: secret
+        default-context: live-ms-java
+
+    circuitbreaker:
+      resilience4j:
+        enabled: true
+
+    # OpenFeign Configuration: Declarative REST client settings
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 5000   # Time in ms to establish connection
+            readTimeout: 10000      # Time in ms to wait for data
+            loggerLevel: basic      # Log level for Feign requests (basic, full, none)
+
+# AIS (Automatic Identification System) Polling Configuration
+ais:
+  polling:
+    interval: 30000  # Poll every 30 seconds
+
+# OlhoVivo (SPTrans) Configuration
+# olhovivo.token injected at runtime from Vault (secret/live-ms-java)
+olhovivo:
+  polling:
+    interval: 60000  # Poll every 60 seconds
+    line-terms:      # key=termosBusca for /Linha/Buscar, value=list of tl filters — buses through Mackenzie "Caio Prado C/B"
+      "178L": [10]
+      "669A": [10]
+      "701A": [10]
+      "701U": [10]
+      "702C": [10]
+      "702U": [10, 22]
+      "778R": [10]
+      "875A": [10]
+      "909T": [1, 10]
+      "7267": [10]
+      "7272": [10]
+      "7281": [10]
+      "7282": [10]
+      "7411": [10]
+      "7545": [10, 21]
+      "7903": [10]
+      "8700": [1, 10]
+      "8705": [10, 51]
+      "8707": [10]
+      "N801": [11]
+
+# Resilience4j Circuit Breaker Configuration
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: 2000ms
+        waitDurationInOpenState: 30000ms
+    instances:
+      ais-api:
+        baseConfig: default
+      olhovivo-api:
+        baseConfig: default
+
+# SpringDoc / Swagger UI — uses static openapi.yaml as the spec
+springdoc:
+  api-docs:
+    enabled: false          # Disable auto-generated JSON spec
+  swagger-ui:
+    url: /openapi.yaml      # Serve the hand-crafted spec from static/
+    path: /swagger-ui.html  # UI available at /swagger-ui.html
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    io.github.raphonzius.lvc: DEBUG
+    org.springframework.cloud.openfeign: DEBUG

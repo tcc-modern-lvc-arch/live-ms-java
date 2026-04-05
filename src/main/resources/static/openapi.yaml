@@ -1,0 +1,281 @@
+openapi: "3.1.0"
+
+info:
+  title: LVC Live Adapter
+  description: |
+    Real-time maritime and urban transit data adapter.
+    Polls the AIS API for vessel positions and the SPTrans OlhoVivo API for
+    São Paulo bus positions, then streams results to Redis.
+  version: "1.0"
+  contact:
+    name: Rafael Pereira
+
+servers:
+  - url: http://localhost:8080
+    description: Local development
+
+tags:
+  - name: Vessels
+    description: AIS maritime vessel real-time positions (Brazil coast)
+  - name: Buses
+    description: SPTrans OlhoVivo real-time bus positions (São Paulo)
+
+# --------------------------------------------------------------------------- #
+# API Versioning: send X-API-Version header to pin a version (defaults to 1.0)#
+# --------------------------------------------------------------------------- #
+
+paths:
+
+  # ---------------------------------------------------------------------------
+  # Vessels
+  # ---------------------------------------------------------------------------
+
+  /api/vessels/bounding-box:
+    get:
+      tags: [Vessels]
+      summary: Vessels in a bounding box
+      description: |
+        Returns all AIS-tracked vessels currently inside the given lat/long
+        bounding box. Defaults to the Brazilian south-east coast.
+      operationId: getVessels
+      parameters:
+        - $ref: "#/components/parameters/ApiVersion"
+        - name: lonMin
+          in: query
+          description: Minimum longitude
+          schema: { type: number, format: double, default: -49.0 }
+        - name: latMin
+          in: query
+          description: Minimum latitude
+          schema: { type: number, format: double, default: -28.5 }
+        - name: lonMax
+          in: query
+          description: Maximum longitude
+          schema: { type: number, format: double, default: -35.0 }
+        - name: latMax
+          in: query
+          description: Maximum latitude
+          schema: { type: number, format: double, default: -22.5 }
+        - name: zoom
+          in: query
+          description: Zoom level for the AIS query
+          schema: { type: integer, default: 6 }
+      responses:
+        "200":
+          description: Vessel list returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VesselData"
+
+  /api/vessels/poll:
+    post:
+      tags: [Vessels]
+      summary: Trigger manual AIS poll
+      description: |
+        Immediately fetches vessel positions from the AIS API and publishes
+        them to the Redis `vessels:stream`.
+      operationId: manualPollVessels
+      parameters:
+        - $ref: "#/components/parameters/ApiVersion"
+      responses:
+        "202":
+          description: Poll accepted and initiated
+          content:
+            text/plain:
+              schema: { type: string, example: "Polling initiated" }
+
+  /api/vessels/health:
+    get:
+      tags: [Vessels]
+      summary: Vessel service health
+      operationId: vesselHealth
+      parameters:
+        - $ref: "#/components/parameters/ApiVersion"
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            text/plain:
+              schema: { type: string, example: "Vessel service is running" }
+
+  # ---------------------------------------------------------------------------
+  # Buses
+  # ---------------------------------------------------------------------------
+
+  /api/buses/lines:
+    get:
+      tags: [Buses]
+      summary: Search bus lines
+      description: |
+        Searches the OlhoVivo API for bus lines matching the given term
+        (line number or name). Returns all matching lines across all directions.
+        The `cl` field in each result is the line code used for position queries.
+      operationId: searchLines
+      parameters:
+        - $ref: "#/components/parameters/ApiVersion"
+        - name: q
+          in: query
+          required: true
+          description: "Line number or partial name (e.g. '8000', 'Lapa')"
+          schema: { type: string }
+      responses:
+        "200":
+          description: Matching lines returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LineData"
+
+  /api/buses/positions/line:
+    get:
+      tags: [Buses]
+      summary: Vehicle positions for a line
+      description: |
+        Returns the current GPS position of all vehicles operating on the
+        given line code (`cl`). Obtain `cl` from the `/lines` endpoint.
+      operationId: positionsByLine
+      parameters:
+        - $ref: "#/components/parameters/ApiVersion"
+        - name: codigoLinha
+          in: query
+          required: true
+          description: Line code (cl) obtained from /api/buses/lines
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Vehicle positions returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PositionResponse"
+
+  /api/buses/poll:
+    post:
+      tags: [Buses]
+      summary: Trigger manual OlhoVivo poll
+      description: |
+        Runs the full targeted polling workflow immediately:
+        1. Searches each configured `line-terms` via /Linha/Buscar
+        2. Resolves `cl` codes from results
+        3. Fetches positions per line via /Posicao/Linha
+        4. Publishes each response to the Redis `buses:stream`
+      operationId: manualPollBuses
+      parameters:
+        - $ref: "#/components/parameters/ApiVersion"
+      responses:
+        "202":
+          description: Poll accepted and initiated
+          content:
+            text/plain:
+              schema: { type: string, example: "OlhoVivo polling initiated" }
+
+  /api/buses/health:
+    get:
+      tags: [Buses]
+      summary: Bus service health
+      operationId: busHealth
+      parameters:
+        - $ref: "#/components/parameters/ApiVersion"
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            text/plain:
+              schema: { type: string, example: "OlhoVivo bus service is running" }
+
+# --------------------------------------------------------------------------- #
+# Schemas                                                                      #
+# --------------------------------------------------------------------------- #
+
+components:
+
+  parameters:
+    ApiVersion:
+      name: X-API-Version
+      in: header
+      required: false
+      description: |
+        API version to use. Defaults to `1.0` when omitted.
+        Supported values: `1.0`
+      schema:
+        type: string
+        default: "1.0"
+        enum: ["1.0"]
+
+  schemas:
+
+    VesselData:
+      type: object
+      description: AIS vessel data record
+      properties:
+        id:            { type: integer, format: int64 }
+        vessel_id:     { type: integer, format: int64 }
+        vesselClass:   { type: string }
+        imo:           { type: integer, format: int64 }
+        mmsi:          { type: integer, format: int64 }
+        name:          { type: string }
+        name_ais:      { type: string }
+        ship_type_id:  { type: integer, format: int64 }
+        detailed_type_id: { type: integer, format: int64 }
+        timestamp_of_position: { type: integer, format: int64 }
+        latitude:      { type: number, format: double }
+        longitude:     { type: number, format: double }
+        speed_over_ground: { type: number, format: double }
+        course_over_ground: { type: number, format: double }
+        true_heading:  { type: integer, format: int64 }
+        flag:          { type: string }
+
+    LineData:
+      type: object
+      description: SPTrans bus line
+      properties:
+        cl: { type: integer, description: "Unique line code (per direction)" }
+        lc: { type: boolean, description: "true if the line is circular" }
+        lt: { type: string,  description: "Numeric line sign (e.g. '8000')" }
+        sl: { type: integer, description: "Direction: 1=main→secondary, 2=secondary→main" }
+        tl: { type: integer, description: "Operation mode: 10=BASE, 21/23/32/41=ATENDIMENTO" }
+        tp: { type: string,  description: "Sign in main→secondary direction" }
+        ts: { type: string,  description: "Sign in secondary→main direction" }
+
+    VehicleData:
+      type: object
+      description: Located bus vehicle
+      properties:
+        p:  { type: integer, description: "Vehicle prefix" }
+        a:  { type: boolean, description: "Accessible for people with disabilities" }
+        ta: { type: string,  description: "UTC timestamp of position capture (ISO 8601)" }
+        py: { type: number, format: double, description: "Latitude" }
+        px: { type: number, format: double, description: "Longitude" }
+
+    LinePosition:
+      type: object
+      description: A single line's vehicle data inside a position snapshot
+      properties:
+        c:   { type: string,  description: "Full line sign (e.g. '5015-10')" }
+        cl:  { type: integer, description: "Line code" }
+        sl:  { type: integer, description: "Direction" }
+        lt0: { type: string,  description: "Destination sign" }
+        lt1: { type: string,  description: "Origin sign" }
+        qv:  { type: integer, description: "Number of located vehicles" }
+        vs:
+          type: array
+          items: { $ref: "#/components/schemas/VehicleData" }
+
+    PositionResponse:
+      type: object
+      description: Vehicle position snapshot from OlhoVivo
+      properties:
+        hr: { type: string, description: "Reference timestamp of the data (HH:mm)" }
+        l:
+          type: array
+          description: Lines with located vehicles (populated by /Posicao)
+          items: { $ref: "#/components/schemas/LinePosition" }
+        vs:
+          type: array
+          description: Vehicles directly (populated by /Posicao/Linha)
+          items: { $ref: "#/components/schemas/VehicleData" }
