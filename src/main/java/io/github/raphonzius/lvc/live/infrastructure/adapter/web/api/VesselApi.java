@@ -16,6 +16,16 @@ import java.util.List;
 @RequestMapping("/api/vessels")
 public interface VesselApi {
 
+    /**
+     * Returns AIS vessels within a geographic bounding box.
+     *
+     * @param lonMin western longitude bound
+     * @param latMin southern latitude bound
+     * @param lonMax eastern longitude bound
+     * @param latMax northern latitude bound
+     * @param zoom   map zoom level (affects vessel density returned)
+     * @return list of vessel data snapshots
+     */
     @GetMapping(value = "/bounding-box", version = "1.0")
     ResponseEntity<List<Vessel.VesselData>> getVessels(
             @RequestParam(defaultValue = "-49.0000") double lonMin,
@@ -25,9 +35,19 @@ public interface VesselApi {
             @RequestParam(defaultValue = "6") int zoom
     );
 
+    /**
+     * Manually triggers an AIS fetch cycle and publishes results to {@code vessels:stream}.
+     *
+     * @return 202 Accepted with confirmation message
+     */
     @PostMapping(value = "/poll", version = "1.0")
     ResponseEntity<String> manualPoll();
 
+    /**
+     * Liveness check for the vessel service.
+     *
+     * @return 200 OK with status message
+     */
     @GetMapping(value = "/health", version = "1.0")
     ResponseEntity<String> health();
 }

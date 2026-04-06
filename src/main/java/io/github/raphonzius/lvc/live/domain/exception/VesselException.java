@@ -1,0 +1,13 @@
+package io.github.raphonzius.lvc.live.domain.exception;
+
+/** Domain exception for vessel-related rule violations (e.g. invalid AIS data). */
+public final class VesselException extends DomainException {
+
+    public VesselException(String message) {
+        super(message);
+    }
+
+    public VesselException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}

@@ -19,6 +19,11 @@ public class OlhoVivoPollingScheduler {
 
     private final OlhoVivoService olhoVivoService;
 
+    /**
+     * Runs the OlhoVivo polling cycle on a fixed delay.
+     * Fetches vehicle positions for all configured line terms and publishes results to {@code buses:stream}.
+     * Interval controlled by {@code olhovivo.polling.interval} (default 60 000 ms).
+     */
     @Scheduled(fixedDelayString = "${olhovivo.polling.interval:60000}")
     public void pollVehiclePositions() {
         try {

@@ -23,6 +23,7 @@ public class VesselController implements VesselApi {
     private final AisPort aisPort;
     private final AisService aisService;
 
+    /** {@inheritDoc} */
     @Override
     public ResponseEntity<List<Vessel.VesselData>> getVessels(
             double lonMin, double latMin, double lonMax, double latMax, int zoom
@@ -31,6 +32,7 @@ public class VesselController implements VesselApi {
         return ResponseEntity.ok(aisPort.fetchVessels(lonMin, latMin, lonMax, latMax, zoom));
     }
 
+    /** {@inheritDoc} */
     @Override
     public ResponseEntity<String> manualPoll() {
         log.info("REST: manual AIS poll triggered");
@@ -38,6 +40,7 @@ public class VesselController implements VesselApi {
         return ResponseEntity.accepted().body("Polling initiated");
     }
 
+    /** {@inheritDoc} */
     @Override
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("Vessel service is running");

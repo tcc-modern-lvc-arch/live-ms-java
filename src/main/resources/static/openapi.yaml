@@ -1,5 +1,4 @@
 openapi: "3.1.0"
-
 info:
   title: LVC Live Adapter
   description: |
@@ -85,7 +84,8 @@ paths:
           description: Poll accepted and initiated
           content:
             text/plain:
-              schema: { type: string, example: "Polling initiated" }
+              schema:
+                $ref: "#/components/schemas/VesselPollAck"
 
   /api/vessels/health:
     get:
@@ -99,7 +99,8 @@ paths:
           description: Service is healthy
           content:
             text/plain:
-              schema: { type: string, example: "Vessel service is running" }
+              schema:
+                $ref: "#/components/schemas/VesselHealthStatus"
 
   # ---------------------------------------------------------------------------
   # Buses
@@ -172,7 +173,8 @@ paths:
           description: Poll accepted and initiated
           content:
             text/plain:
-              schema: { type: string, example: "OlhoVivo polling initiated" }
+              schema:
+                $ref: "#/components/schemas/BusPollAck"
 
   /api/buses/health:
     get:
@@ -186,7 +188,8 @@ paths:
           description: Service is healthy
           content:
             text/plain:
-              schema: { type: string, example: "OlhoVivo bus service is running" }
+              schema:
+                $ref: "#/components/schemas/BusHealthStatus"
 
 # --------------------------------------------------------------------------- #
 # Schemas                                                                      #
@@ -208,6 +211,26 @@ components:
         enum: ["1.0"]
 
   schemas:
+
+    VesselPollAck:
+      type: string
+      description: Acknowledgement returned by POST /api/vessels/poll when the AIS fetch cycle is accepted
+      example: "Polling initiated"
+
+    VesselHealthStatus:
+      type: string
+      description: Liveness message returned by GET /api/vessels/health
+      example: "Vessel service is running"
+
+    BusPollAck:
+      type: string
+      description: Acknowledgement returned by POST /api/buses/poll when the OlhoVivo polling workflow is accepted
+      example: "OlhoVivo polling initiated"
+
+    BusHealthStatus:
+      type: string
+      description: Liveness message returned by GET /api/buses/health
+      example: "OlhoVivo bus service is running"
 
     VesselData:
       type: object

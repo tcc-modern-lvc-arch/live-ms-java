@@ -2,14 +2,13 @@ package io.github.raphonzius.lvc.live.infrastructure.input.external.ais;
 
 import feign.Response;
 import feign.codec.ErrorDecoder;
-import lombok.Getter;
+import io.github.raphonzius.lvc.live.infrastructure.exception.AisApiException;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Custom error decoder for AIS API responses.
- * Provides meaningful error handling and logging.
- *
- * Location: infrastructure/input/external/ais/
+ * Feign error decoder for AIS Friends API responses.
+ * Maps HTTP error status codes to typed {@link AisApiException} instances.
+ * Delegates unrecognised status codes to the default Feign decoder.
  */
 @Slf4j
 public class AisErrorDecoder implements ErrorDecoder {
@@ -29,18 +28,4 @@ public class AisErrorDecoder implements ErrorDecoder {
             default -> delegate.decode(methodKey, response);
         };
     }
-
-    /**
-     * Custom exception for AIS API errors.
-     */
-    @Getter
-    public static class AisApiException extends RuntimeException {
-        private final int statusCode;
-
-        public AisApiException(String message, int statusCode) {
-            super(message);
-            this.statusCode = statusCode;
-        }
-    }
 }
-

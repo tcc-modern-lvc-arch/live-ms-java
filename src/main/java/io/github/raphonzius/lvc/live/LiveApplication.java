@@ -8,13 +8,20 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+/**
+ * Entry point for the LVC Live Adapter microservice.
+ *
+ * <p>Polls AIS (vessel positions) and SPTrans OlhoVivo (bus positions),
+ * then streams results to Redis for downstream consumers.</p>
+ */
 @SpringBootApplication
 @EnableFeignClients
 @EnableScheduling
 @EnableConfigurationProperties({AisProperties.class, OlhoVivoProperties.class})
 public class LiveApplication {
 
-    public static void main(String[] args) {
+    /** Starts the Spring Boot application. */
+    static void main(String[] args) {
         SpringApplication.run(LiveApplication.class, args);
     }
 

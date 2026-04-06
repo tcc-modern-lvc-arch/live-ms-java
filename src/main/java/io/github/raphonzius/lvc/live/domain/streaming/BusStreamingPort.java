@@ -8,5 +8,10 @@ import io.github.raphonzius.lvc.live.domain.bus.VehiclePosition;
  */
 public interface BusStreamingPort {
 
+    /**
+     * Publishes a vehicle position snapshot to the {@code buses:stream} Redis stream.
+     *
+     * @param positions the position response to publish
+     */
     void publishPositions(VehiclePosition.PositionResponse positions);
 }

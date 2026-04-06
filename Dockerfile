@@ -1,42 +1,49 @@
-# Multi-stage build for the Live Adapter microservice
-# Stage 1: Build
+# ─── Stage 1: Build ───────────────────────────────────────────────────────────
 FROM maven:3.9.6-eclipse-temurin-25 AS builder
 
 WORKDIR /build
 
-# Copy POM
+# Cache deps layer — only invalidates on pom.xml change
 COPY pom.xml .
+RUN mvn dependency:go-offline -q
 
-# Copy source code
 COPY src/ src/
+RUN mvn clean package -DskipTests -o
 
-# Build the application
-RUN mvn clean package -DskipTests
+# ─── Stage 2: Extracter ───────────────────────────────────────────────────────
+# Boot app once with spring.context.exit=onRefresh to dump AppCDS archive.
+# Redis connection is lazy — context refresh completes without Redis present.
+FROM bellsoft/liberica-runtime-container:jre-25-cds-slim-glibc AS extracter
 
-# Stage 2: Runtime
-FROM amazoncorretto:25-alpine-jdk
+WORKDIR /app
+COPY --from=builder /build/target/LVC*.jar app.jar
+
+RUN java \
+    -Dspring.context.exit=onRefresh \
+    -XX:ArchiveClassesAtExit=application.jsa \
+    -jar app.jar
+
+# ─── Stage 3: Runtime ─────────────────────────────────────────────────────────
+FROM bellsoft/liberica-runtime-container:jre-25-cds-slim-glibc
 
 WORKDIR /app
 
-# Create non-root user for security
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN groupadd -r spring && useradd -r -g spring -s /sbin/nologin spring
 
-# Copy the built JAR from builder stage
-COPY --from=builder /build/target/LVC*.jar app.jar
+COPY --from=builder /build/target/*.jar app.jar
+COPY --from=extracter /app/application.jsa application.jsa
 
-# Change ownership to appuser
-RUN chown -R appuser:appgroup /app
+RUN chown -R spring:spring /app
+USER spring
 
-# Switch to non-root user
-USER appuser
+ENV JDK_JAVA_OPTIONS="\
+  -XX:SharedArchiveFile=application.jsa \
+  -XX:+UseG1GC \
+  -XX:+UseContainerSupport \
+  -XX:MaxRAMPercentage=75.0 \
+  -XX:InitialRAMPercentage=50.0 \
+  -XX:+ExitOnOutOfMemoryError"
 
-# Expose port
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost:8080/api/v1/vessels/health || exit 1
-
-# Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
-

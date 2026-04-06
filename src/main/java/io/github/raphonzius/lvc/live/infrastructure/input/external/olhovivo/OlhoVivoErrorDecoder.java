@@ -2,21 +2,22 @@ package io.github.raphonzius.lvc.live.infrastructure.input.external.olhovivo;
 
 import feign.Response;
 import feign.codec.ErrorDecoder;
-import lombok.Getter;
+import io.github.raphonzius.lvc.live.infrastructure.exception.OlhoVivoApiException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Custom error decoder for OlhoVivo API responses.
+ * Feign error decoder for OlhoVivo API responses.
+ * Maps HTTP error status codes to typed {@link OlhoVivoApiException} instances.
+ * On 401, invalidates the cached session so {@link OlhoVivoAuthInterceptor} re-authenticates next request.
+ * Delegates unrecognised status codes to the default Feign decoder.
  */
 @Slf4j
+@RequiredArgsConstructor
 public class OlhoVivoErrorDecoder implements ErrorDecoder {
 
     private final ErrorDecoder delegate = new Default();
     private final OlhoVivoAuthInterceptor authInterceptor;
-
-    public OlhoVivoErrorDecoder(OlhoVivoAuthInterceptor authInterceptor) {
-        this.authInterceptor = authInterceptor;
-    }
 
     @Override
     public Exception decode(String methodKey, Response response) {
@@ -33,15 +34,5 @@ public class OlhoVivoErrorDecoder implements ErrorDecoder {
             case 500, 502, 503, 504 -> new OlhoVivoApiException("OlhoVivo server error", response.status());
             default -> delegate.decode(methodKey, response);
         };
-    }
-
-    @Getter
-    public static class OlhoVivoApiException extends RuntimeException {
-        private final int statusCode;
-
-        public OlhoVivoApiException(String message, int statusCode) {
-            super(message);
-            this.statusCode = statusCode;
-        }
     }
 }

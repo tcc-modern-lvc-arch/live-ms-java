@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Application service for OlhoVivo SPTrans bus data orchestration.
@@ -28,23 +29,26 @@ public class OlhoVivoService {
     private final BusStreamingPort busStreamingPort;
     private final OlhoVivoProperties properties;
 
+    /**
+     * Executes the targeted polling workflow:
+     * searches configured line terms → filters by {@code tl} → fetches positions per line → publishes to Redis.
+     */
     public void fetchAndStreamVehiclePositions() {
-        List<String> terms = properties.polling().lineTerms();
+        Map<String, List<Integer>> lineTerms = properties.polling().lineTerms();
 
-        if (terms.isEmpty()) {
+        if (lineTerms.isEmpty()) {
             log.warn("No olhovivo.polling.line-terms configured — skipping poll");
             return;
         }
 
-        terms.stream()
-                .flatMap(term -> {
-                    List<BusLine.LineData> lines = olhoVivoPort.searchLines(term);
-                    log.debug("Term '{}' resolved {} line(s)", term, lines.size());
-                    return lines.stream();
+        lineTerms.entrySet().stream()
+                .flatMap(entry -> {
+                    List<BusLine.LineData> lines = olhoVivoPort.searchLines(entry.getKey());
+                    log.debug("Term '{}' resolved {} line(s) before tl filter", entry.getKey(), lines.size());
+                    return lines.stream()
+                            .filter(line -> entry.getValue().contains(line.tl()));
                 })
-                .mapToInt(line -> switch (line) {
-                    case BusLine.LineData(var cl, var lc, var lt, var sl, var tl, var tp, var ts) -> cl;
-                })
+                .mapToInt(BusLine.LineData::cl)
                 .distinct()
                 .mapToObj(cl -> {
                     log.debug("Fetching positions for lineCode={}", cl);
@@ -57,10 +61,18 @@ public class OlhoVivoService {
                 });
     }
 
+    /**
+     * Delegates line search to the domain port.
+     * @param terms search term (e.g. "178L")
+     */
     public List<BusLine.LineData> searchLines(String terms) {
         return olhoVivoPort.searchLines(terms);
     }
 
+    /**
+     * Delegates vehicle position lookup to the domain port.
+     * @param lineCode line code ({@code cl}) from OlhoVivo
+     */
     public VehiclePosition.PositionResponse positionsByLine(int lineCode) {
         return olhoVivoPort.positionsByLine(lineCode);
     }

@@ -11,6 +11,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class JacksonConfiguration {
 
+    /**
+     * Configures the global {@link ObjectMapper}.
+     * Disables {@link SerializationFeature#WRITE_DATES_AS_TIMESTAMPS} so date/time values
+     * are serialized as ISO-8601 strings rather than epoch numbers.
+     *
+     * @return configured ObjectMapper
+     */
     @Bean
     public ObjectMapper objectMapper() {
         ObjectMapper mapper = new ObjectMapper();

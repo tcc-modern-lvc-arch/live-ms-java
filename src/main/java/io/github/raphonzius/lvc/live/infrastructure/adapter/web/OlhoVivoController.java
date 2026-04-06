@@ -22,18 +22,21 @@ public class OlhoVivoController implements OlhoVivoApi {
 
     private final OlhoVivoService olhoVivoService;
 
+    /** {@inheritDoc} */
     @Override
     public ResponseEntity<List<BusLine.LineData>> searchLines(String terms) {
         log.info("REST: searchLines q={}", terms);
         return ResponseEntity.ok(olhoVivoService.searchLines(terms));
     }
 
+    /** {@inheritDoc} */
     @Override
     public ResponseEntity<VehiclePosition.PositionResponse> positionsByLine(int lineCode) {
         log.info("REST: positionsByLine codigoLinha={}", lineCode);
         return ResponseEntity.ok(olhoVivoService.positionsByLine(lineCode));
     }
 
+    /** {@inheritDoc} */
     @Override
     public ResponseEntity<String> manualPoll() {
         log.info("REST: manual OlhoVivo poll triggered");
@@ -41,6 +44,7 @@ public class OlhoVivoController implements OlhoVivoApi {
         return ResponseEntity.accepted().body("OlhoVivo polling initiated");
     }
 
+    /** {@inheritDoc} */
     @Override
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("OlhoVivo bus service is running");

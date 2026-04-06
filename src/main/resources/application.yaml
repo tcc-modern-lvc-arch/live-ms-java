@@ -30,6 +30,7 @@ spring:
     vault:
       host: localhost
       port: 8200
+      scheme: http
       authentication: TOKEN
       token: tcc-local-root-token
       kv:

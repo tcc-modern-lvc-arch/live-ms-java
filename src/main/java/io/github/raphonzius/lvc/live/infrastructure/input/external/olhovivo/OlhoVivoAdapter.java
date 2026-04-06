@@ -30,6 +30,7 @@ public class OlhoVivoAdapter implements OlhoVivoPort {
         return feignClient.searchLines(terms);
     }
 
+    /** Circuit breaker fallback for {@link #searchLines} — returns empty list. */
     public List<BusLine.LineData> searchLinesFallback(String terms, Exception ex) {
         log.warn("OlhoVivo searchLines circuit open: terms={}", terms, ex);
         return BusLine.LineData.empty();
@@ -42,6 +43,7 @@ public class OlhoVivoAdapter implements OlhoVivoPort {
         return feignClient.positionsByLine(lineCode);
     }
 
+    /** Circuit breaker fallback for {@link #positionsByLine} — returns empty response. */
     public VehiclePosition.PositionResponse positionsByLineFallback(int lineCode, Exception ex) {
         log.warn("OlhoVivo positionsByLine circuit open: lineCode={}", lineCode, ex);
         return VehiclePosition.PositionResponse.empty();

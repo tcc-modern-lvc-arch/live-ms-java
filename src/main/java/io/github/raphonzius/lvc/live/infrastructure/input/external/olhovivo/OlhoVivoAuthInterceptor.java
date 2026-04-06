@@ -4,6 +4,7 @@ import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import io.github.raphonzius.lvc.live.infrastructure.config.properties.OlhoVivoProperties;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClient;
 
@@ -58,6 +59,8 @@ public class OlhoVivoAuthInterceptor implements RequestInterceptor {
             log.info("Authenticating with OlhoVivo API...");
             ResponseEntity<Boolean> response = restClient.post()
                     .uri("/Login/Autenticar?token={token}", token)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new byte[0])
                     .retrieve()
                     .toEntity(Boolean.class);
 
