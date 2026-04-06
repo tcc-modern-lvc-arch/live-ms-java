@@ -1,13 +1,15 @@
 package io.github.raphonzius.lvc.live.application.exception;
 
-/** Application exception for AIS service orchestration failures. */
+import org.springframework.http.HttpStatus;
+
+/** Application exception for AIS service orchestration failures. Maps to 500. */
 public final class AisServiceException extends ApplicationException {
 
     public AisServiceException(String message) {
-        super(message);
+        super(message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     public AisServiceException(String message, Throwable cause) {
-        super(message, cause);
+        super(message, cause, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

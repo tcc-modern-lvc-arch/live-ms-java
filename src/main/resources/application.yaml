@@ -56,6 +56,11 @@ ais:
   polling:
     interval: 30000  # Poll every 30 seconds
 
+# CGESP (Flooding) Configuration
+cgesp:
+  polling.interval: 60000  # Poll every 60 seconds (1 minute)
+  max-range-days: 30  # Maximum calendar days allowed in a synchronous range query
+
 # OlhoVivo (SPTrans) Configuration
 # olhovivo.token injected at runtime from Vault (secret/live-ms-java)
 olhovivo:
@@ -99,8 +104,15 @@ resilience4j:
     instances:
       ais-api:
         baseConfig: default
+      cgesp-api:
+        baseConfig: default
+        # CGESP is an unreliable HTML scraper — open faster and stay open longer
+        waitDurationInOpenState: 60000ms      # 60s before probing again
+        slowCallDurationThreshold: 8000ms     # HTML scrape can be slow
+        minimumNumberOfCalls: 3               # Open circuit after fewer calls
       olhovivo-api:
         baseConfig: default
+
 
 # SpringDoc / Swagger UI — uses static openapi.yaml as the spec
 springdoc:

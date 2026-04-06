@@ -2,7 +2,7 @@ package io.github.raphonzius.lvc.live.infrastructure.output.streaming.redis;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.raphonzius.lvc.live.domain.streaming.StreamingPort;
+import io.github.raphonzius.lvc.live.domain.streaming.VesselStreamingPort;
 import io.github.raphonzius.lvc.live.domain.vessel.Vessel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class RedisStreamingAdapter implements StreamingPort {
+public class RedisVesselStreamingAdapter implements VesselStreamingPort {
 
     private static final String REDIS_STREAM_KEY = "vessels:stream";
 

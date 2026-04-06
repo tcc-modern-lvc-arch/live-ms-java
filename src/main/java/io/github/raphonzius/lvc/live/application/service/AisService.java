@@ -1,6 +1,6 @@
 package io.github.raphonzius.lvc.live.application.service;
 
-import io.github.raphonzius.lvc.live.domain.streaming.StreamingPort;
+import io.github.raphonzius.lvc.live.domain.streaming.VesselStreamingPort;
 import io.github.raphonzius.lvc.live.domain.vessel.AisPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 public class AisService {
 
     private final AisPort aisPort;
-    private final StreamingPort streamingPort;
+    private final VesselStreamingPort vesselStreamingPort;
 
     /**
      * Fetches vessels from AIS API and publishes them to the streaming channel.
@@ -53,7 +53,7 @@ public class AisService {
 
         if (vessels != null && !vessels.isEmpty()) {
             log.info("Streaming {} vessels to Redis", vessels.size());
-            streamingPort.publishVesselBatch(vessels.stream());
+            vesselStreamingPort.publishVesselBatch(vessels.stream());
         }
     }
 }

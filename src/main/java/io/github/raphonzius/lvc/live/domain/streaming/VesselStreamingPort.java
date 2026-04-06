@@ -6,7 +6,7 @@ import io.github.raphonzius.lvc.live.domain.vessel.Vessel;
  * Port interface for streaming vessel data to other microservices.
  * Implements the publisher pattern for data distribution.
  */
-public interface StreamingPort {
+public interface VesselStreamingPort {
 
     /**
      * Publishes vessel data to the streaming channel.

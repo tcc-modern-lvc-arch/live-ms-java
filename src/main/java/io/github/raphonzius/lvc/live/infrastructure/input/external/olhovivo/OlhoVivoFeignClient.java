@@ -11,9 +11,9 @@ import java.util.List;
 /**
  * Feign client for the SPTrans OlhoVivo API v2.1.
  * Authentication is handled by OlhoVivoAuthInterceptor (cookie-based session).
- *
- * Base URL: https://api.olhovivo.sptrans.com.br/v2.1
- *
+ * <p>
+ * Base URL: <a href="https://api.olhovivo.sptrans.com.br/v2.1">https://api.olhovivo.sptrans.com.br/v2.1</a>
+ * <p>
  * Only the endpoints required for the targeted polling workflow are active.
  * Commented endpoints are available in the API but not used in this project.
  */
@@ -28,11 +28,15 @@ public interface OlhoVivoFeignClient {
     // ACTIVE — used in targeted polling workflow
     // -------------------------------------------------------------------------
 
-    /** Step 1: resolve line codes from a configured search term */
+    /**
+     * Step 1: resolve line codes from a configured search term
+     */
     @GetMapping("/Linha/Buscar")
     List<BusLine.LineData> searchLines(@RequestParam("termosBusca") String terms);
 
-    /** Step 2: fetch vehicle positions for a single line (codigoLinha = cl from searchLines) */
+    /**
+     * Step 2: fetch vehicle positions for a single line (codigoLinha = cl from searchLines)
+     */
     @GetMapping("/Posicao/Linha")
     VehiclePosition.PositionResponse positionsByLine(@RequestParam("codigoLinha") int lineCode);
 

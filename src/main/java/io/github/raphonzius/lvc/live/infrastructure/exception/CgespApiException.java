@@ -4,17 +4,17 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 /**
- * Thrown when the AIS Friends external API returns an error response.
+ * Thrown when the CGESP scraper receives an HTTP error or fails to parse the page.
  * Carries the upstream HTTP status code for diagnostics.
  * Maps to {@link HttpStatus#BAD_GATEWAY} in the REST response.
  */
 @Getter
-public final class AisApiException extends InfrastructureException {
+public final class CgespApiException extends InfrastructureException {
 
-    /** HTTP status code returned by the upstream AIS API (for diagnostics). */
+    /** HTTP status code returned by the upstream CGESP page (for diagnostics). */
     private final int statusCode;
 
-    public AisApiException(String message, int statusCode) {
+    public CgespApiException(String message, int statusCode) {
         super(message, HttpStatus.BAD_GATEWAY);
         this.statusCode = statusCode;
     }

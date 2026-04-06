@@ -18,6 +18,8 @@ tags:
     description: AIS maritime vessel real-time positions (Brazil coast)
   - name: Buses
     description: SPTrans OlhoVivo real-time bus positions (São Paulo)
+  - name: Floodings
+    description: CGESP flooding points (São Paulo — scraped HTML, may be intermittently unavailable)
 
 # --------------------------------------------------------------------------- #
 # API Versioning: send X-API-Version header to pin a version (defaults to 1.0)#
@@ -101,6 +103,116 @@ paths:
             text/plain:
               schema:
                 $ref: "#/components/schemas/VesselHealthStatus"
+
+  # ---------------------------------------------------------------------------
+  # Floodings
+  # ---------------------------------------------------------------------------
+
+  /api/floodings:
+    get:
+      tags: [Floodings]
+      summary: Flooding points for a date
+      description: |
+        Returns all flooding points scraped from CGESP for the given date.
+        Defaults to today in the São Paulo timezone when `date` is omitted.
+
+        **Circuit breaker:** if CGESP is unreachable the response will be an
+        empty array (fallback). Retried up to 3× with exponential backoff
+        (500 ms → 1 s → 2 s) before the circuit opens.
+      operationId: getFloodings
+      parameters:
+        - $ref: "#/components/parameters/ApiVersion"
+        - name: date
+          in: query
+          required: false
+          description: "Date to query in DD/MM/YYYY format (defaults to today SP time)"
+          schema: { type: string, example: "06/04/2026" }
+      responses:
+        "200":
+          description: Flooding points returned (may be empty if CGESP has no data or circuit is open)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FloodData"
+        "400":
+          description: Invalid date format (expected DD/MM/YYYY)
+
+  /api/floodings/range:
+    get:
+      tags: [Floodings]
+      summary: Flooding points for a date range
+      description: |
+        Returns all flooding points scraped from CGESP for every date in the
+        inclusive range **[from, to]**. Dates are queried sequentially.
+
+        Maximum allowed range is configured via `cgesp.max-range-days`
+        (default **30 days**). Requests exceeding this return `400`.
+
+        **Circuit breaker / retry:** same resilience policy as the single-date
+        endpoint applies per date; failed dates return an empty contribution.
+      operationId: getFloodingsByRange
+      parameters:
+        - $ref: "#/components/parameters/ApiVersion"
+        - name: from
+          in: query
+          required: true
+          description: "Start date (inclusive) in DD/MM/YYYY format"
+          schema: { type: string, example: "01/04/2026" }
+        - name: to
+          in: query
+          required: true
+          description: "End date (inclusive) in DD/MM/YYYY format"
+          schema: { type: string, example: "06/04/2026" }
+      responses:
+        "200":
+          description: Flat list of flooding points across all queried dates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FloodData"
+        "400":
+          description: |
+            Bad request — possible causes:
+            - Invalid date format (expected DD/MM/YYYY)
+            - `from` is after `to`
+            - Range exceeds `cgesp.max-range-days` (default 30)
+
+  /api/floodings/poll:
+    post:
+      tags: [Floodings]
+      summary: Trigger manual CGESP poll
+      description: |
+        Immediately fetches today's flooding points from CGESP and publishes
+        them to the Redis `floodings:stream`.
+      operationId: manualPollFloodings
+      parameters:
+        - $ref: "#/components/parameters/ApiVersion"
+      responses:
+        "202":
+          description: Poll accepted and initiated
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/FloodingPollAck"
+
+  /api/floodings/health:
+    get:
+      tags: [Floodings]
+      summary: Flooding service health
+      operationId: floodingHealth
+      parameters:
+        - $ref: "#/components/parameters/ApiVersion"
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/FloodingHealthStatus"
 
   # ---------------------------------------------------------------------------
   # Buses
@@ -302,3 +414,72 @@ components:
           type: array
           description: Vehicles directly (populated by /Posicao/Linha)
           items: { $ref: "#/components/schemas/VehicleData" }
+
+    FloodingPollAck:
+      type: string
+      description: Acknowledgement returned by POST /api/floodings/poll
+      example: "CGESP flooding polling initiated"
+
+    FloodingHealthStatus:
+      type: string
+      description: Liveness message returned by GET /api/floodings/health
+      example: "CGESP flooding service is running"
+
+    FloodStatus:
+      type: string
+      description: |
+        CGESP flood classification derived from the CSS class on the HTML page.
+        - `ATIVO_INTRANSITAVEL` — active, road impassable
+        - `ATIVO_TRANSITAVEL`   — active, road still passable
+        - `INATIVO_INTRANSITAVEL` — resolved, was impassable
+        - `INATIVO_TRANSITAVEL`   — resolved, was passable
+      enum:
+        - ATIVO_INTRANSITAVEL
+        - ATIVO_TRANSITAVEL
+        - INATIVO_INTRANSITAVEL
+        - INATIVO_TRANSITAVEL
+
+    FloodData:
+      type: object
+      description: A single flooding point scraped from the CGESP website
+      properties:
+        date:
+          type: string
+          format: date
+          description: "Date of the flooding event (YYYY-MM-DD)"
+          example: "2026-04-06"
+        zone:
+          type: string
+          description: "São Paulo zone (e.g. 'Zona Leste')"
+          example: "Zona Leste"
+        neighborhood:
+          type: string
+          description: "Neighborhood name"
+          example: "São Mateus"
+        status:
+          $ref: "#/components/schemas/FloodStatus"
+        startTime:
+          type: string
+          format: time
+          description: "Time the flooding started (HH:MM)"
+          example: "17:52"
+        endTime:
+          type: string
+          format: time
+          description: |
+            Time the flooding ended (HH:MM).
+            Inferred to current SP time if still active today,
+            or 23:59 for historical records with no end time.
+          example: "19:00"
+        street:
+          type: string
+          description: "Street or avenue affected"
+          example: "AV JOSE ALENCAR GOMES DA SILVA"
+        direction:
+          type: string
+          description: "Traffic direction affected"
+          example: "CENTRO/BAIRRO"
+        reference:
+          type: string
+          description: "Cross-reference landmark"
+          example: "AV SAPOPEMBA"

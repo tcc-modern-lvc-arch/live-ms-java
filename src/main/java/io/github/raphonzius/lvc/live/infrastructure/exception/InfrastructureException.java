@@ -1,24 +1,35 @@
 package io.github.raphonzius.lvc.live.infrastructure.exception;
 
+import org.springframework.http.HttpStatus;
+
 /**
  * Root of the infrastructure exception hierarchy.
  * Thrown when an infrastructure adapter fails to communicate with an external system.
  *
- * <p>Sealed — only {@link AisApiException}, {@link OlhoVivoApiException},
- * and {@link RedisStreamingException} are permitted.
- * Handled by {@code GlobalExceptionHandler} → 502 / 503 depending on subtype.</p>
+ * <p>Each subtype declares the HTTP status it maps to by passing it to the parent constructor.
+ * {@code GlobalExceptionHandler} calls {@link #httpStatus()} directly — no per-subtype switch needed.
+ * Adding a new sealed subtype automatically forces it to supply its own response status.</p>
+ *
+ * <p>Sealed — permitted subtypes: {@link AisApiException}, {@link CgespApiException},
+ * {@link OlhoVivoApiException}, {@link RedisStreamingException}.</p>
  */
 public sealed class InfrastructureException extends RuntimeException
-        permits AisApiException, OlhoVivoApiException, RedisStreamingException {
+        permits AisApiException, CgespApiException, OlhoVivoApiException, RedisStreamingException {
 
-    /** @param message description of the infrastructure failure */
-    public InfrastructureException(String message) {
+    private final HttpStatus httpStatus;
+
+    public InfrastructureException(String message, HttpStatus httpStatus) {
         super(message);
+        this.httpStatus = httpStatus;
     }
 
-    /** @param message description of the infrastructure failure
-     *  @param cause   the underlying cause */
-    public InfrastructureException(String message, Throwable cause) {
+    public InfrastructureException(String message, Throwable cause, HttpStatus httpStatus) {
         super(message, cause);
+        this.httpStatus = httpStatus;
+    }
+
+    /** HTTP status this exception maps to in the REST response. */
+    public HttpStatus httpStatus() {
+        return httpStatus;
     }
 }

@@ -1,23 +1,35 @@
 package io.github.raphonzius.lvc.live.application.exception;
 
+import org.springframework.http.HttpStatus;
+
 /**
  * Root of the application exception hierarchy.
  * Thrown when an application-layer service fails to orchestrate domain operations.
  *
- * <p>Sealed — only {@link AisServiceException} and {@link OlhoVivoServiceException} are permitted.
- * Handled by {@code GlobalExceptionHandler} → 500 Internal Server Error.</p>
+ * <p>Each subtype declares the HTTP status it maps to by passing it to the parent constructor.
+ * {@code GlobalExceptionHandler} calls {@link #httpStatus()} directly.</p>
+ *
+ * <p>Sealed — permitted subtypes: {@link AisServiceException}, {@link CgespServiceException},
+ * {@link InvalidRangeException}, {@link OlhoVivoServiceException}.
+ * Subtypes may pass any status; the default for service failures is 500.</p>
  */
 public sealed class ApplicationException extends RuntimeException
-        permits AisServiceException, OlhoVivoServiceException {
+        permits AisServiceException, CgespServiceException, InvalidRangeException, OlhoVivoServiceException {
 
-    /** @param message description of the service failure */
-    public ApplicationException(String message) {
+    private final HttpStatus httpStatus;
+
+    public ApplicationException(String message, HttpStatus httpStatus) {
         super(message);
+        this.httpStatus = httpStatus;
     }
 
-    /** @param message description of the service failure
-     *  @param cause   the underlying cause */
-    public ApplicationException(String message, Throwable cause) {
+    public ApplicationException(String message, Throwable cause, HttpStatus httpStatus) {
         super(message, cause);
+        this.httpStatus = httpStatus;
+    }
+
+    /** HTTP status this exception maps to in the REST response. */
+    public HttpStatus httpStatus() {
+        return httpStatus;
     }
 }

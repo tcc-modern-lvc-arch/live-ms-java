@@ -19,9 +19,12 @@
         <!-- Core Properties -->
         <java.version>25</java.version>
 
-        <!-- General Dependencies Version -->
+        <!-- Spring Family Dependencies -->
         <spring-cloud.version>5.0.1</spring-cloud.version>
         <springdoc.version>3.0.2</springdoc.version>
+
+        <!-- General Dependencies Version -->
+        <jsoup.version>1.22.1</jsoup.version>
     </properties>
 
     <dependencies>
@@ -73,6 +76,13 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-vault-config</artifactId>
             <version>${spring-cloud.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>${jsoup.version}</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>

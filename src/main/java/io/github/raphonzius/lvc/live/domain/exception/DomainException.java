@@ -1,23 +1,33 @@
 package io.github.raphonzius.lvc.live.domain.exception;
 
+import org.springframework.http.HttpStatus;
+
 /**
  * Root of the domain exception hierarchy.
  * Thrown when a domain business rule is violated.
  *
- * <p>Sealed — only {@link BusException} and {@link VesselException} are permitted.
- * Handled by {@code GlobalExceptionHandler} → 422 Unprocessable Content.</p>
+ * <p>Each subtype declares the HTTP status it maps to by passing it to the parent constructor.
+ * {@code GlobalExceptionHandler} calls {@link #httpStatus()} directly.</p>
+ *
+ * <p>Sealed — permitted subtypes: {@link BusException}, {@link FloodingException}, {@link VesselException}.</p>
  */
 public sealed class DomainException extends RuntimeException
-        permits BusException, VesselException {
+        permits BusException, FloodingException, VesselException {
 
-    /** @param message human-readable description of the violated rule */
-    public DomainException(String message) {
+    private final HttpStatus httpStatus;
+
+    public DomainException(String message, HttpStatus httpStatus) {
         super(message);
+        this.httpStatus = httpStatus;
     }
 
-    /** @param message human-readable description of the violated rule
-     *  @param cause   the underlying cause */
-    public DomainException(String message, Throwable cause) {
+    public DomainException(String message, Throwable cause, HttpStatus httpStatus) {
         super(message, cause);
+        this.httpStatus = httpStatus;
+    }
+
+    /** HTTP status this exception maps to in the REST response. */
+    public HttpStatus httpStatus() {
+        return httpStatus;
     }
 }
