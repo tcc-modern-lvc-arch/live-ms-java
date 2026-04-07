@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.raphonzius.lvc.live.domain.TimeZones;
+
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -23,7 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CgespController implements CgespApi {
 
-    private static final ZoneId SAO_PAULO_TZ = ZoneId.of("America/Sao_Paulo");
+    private static final ZoneId SAO_PAULO_TZ = TimeZones.SAO_PAULO;
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final CgespService cgespService;

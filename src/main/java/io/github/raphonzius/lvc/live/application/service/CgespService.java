@@ -1,12 +1,13 @@
 package io.github.raphonzius.lvc.live.application.service;
 
 import io.github.raphonzius.lvc.live.application.exception.InvalidRangeException;
+import io.github.raphonzius.lvc.live.domain.TimeZones;
 import io.github.raphonzius.lvc.live.domain.flooding.FloodingPoint;
 import io.github.raphonzius.lvc.live.domain.flooding.FloodingPort;
 import io.github.raphonzius.lvc.live.domain.streaming.FloodingStreamingPort;
-import io.github.raphonzius.lvc.live.infrastructure.config.properties.CgespProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -29,11 +30,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CgespService {
 
-    private static final ZoneId SAO_PAULO_TZ = ZoneId.of("America/Sao_Paulo");
+    private static final ZoneId SAO_PAULO_TZ = TimeZones.SAO_PAULO;
 
     private final FloodingPort floodingPort;
     private final FloodingStreamingPort floodingStreamingPort;
-    private final CgespProperties cgespProperties;
+
+    @Value("${cgesp.max-range-days:30}")
+    private int maxRangeDays;
 
     /**
      * Fetches today's flooding points (São Paulo timezone) and publishes them to Redis.
@@ -66,7 +69,7 @@ public class CgespService {
      */
     public List<FloodingPoint.FloodData> fetchFloodingsByRange(LocalDate from, LocalDate to) {
         long days = ChronoUnit.DAYS.between(from, to);
-        int maxDays = cgespProperties.maxRangeDays();
+        int maxDays = this.maxRangeDays;
         if (days >= maxDays) {
             throw new InvalidRangeException(
                     "Range spans " + (days + 1) + " days — maximum is " + maxDays);

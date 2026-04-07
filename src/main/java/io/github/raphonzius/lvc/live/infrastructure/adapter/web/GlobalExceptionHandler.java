@@ -36,17 +36,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DomainException.class)
     public ResponseEntity<ProblemDetail> handleDomain(DomainException ex, HttpServletRequest request) {
         log.warn("Domain exception: {}", ex.getMessage());
-        return build(ex.httpStatus(), ex.getMessage(), request);
+        return build(HttpStatus.valueOf(ex.statusCode()), ex.getMessage(), request);
     }
 
     @ExceptionHandler(ApplicationException.class)
     public ResponseEntity<ProblemDetail> handleApplication(ApplicationException ex, HttpServletRequest request) {
-        if (ex.httpStatus().is4xxClientError()) {
+        HttpStatus status = HttpStatus.valueOf(ex.statusCode());
+        if (status.is4xxClientError()) {
             log.warn("Application exception (client error): {}", ex.getMessage());
         } else {
             log.error("Application exception: {}", ex.getMessage());
         }
-        return build(ex.httpStatus(), ex.getMessage(), request);
+        return build(status, ex.getMessage(), request);
     }
 
     @ExceptionHandler(InfrastructureException.class)

@@ -23,7 +23,9 @@ spring:
       use.header: "X-API-Version"
 
   config:
-    import: "vault://"
+    # 'optional:' skips Vault if unavailable (dev/test without Vault running).
+    # In production, ensure Vault is reachable; missing secrets cause NullPointerExceptions.
+    import: "optional:vault://"
 
   # Spring Cloud Circuit Breaker: Enables Resilience4j integration
   cloud:
@@ -121,6 +123,10 @@ springdoc:
   swagger-ui:
     url: /openapi.yaml      # Serve the hand-crafted spec from static/
     path: /swagger-ui.html  # UI available at /swagger-ui.html
+
+# Redis stream retention — approximate trim (MAXLEN ~) applied after each publish
+streaming:
+  max-len: 1000
 
 # Logging Configuration
 logging:

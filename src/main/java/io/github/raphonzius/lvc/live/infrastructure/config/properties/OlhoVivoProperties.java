@@ -12,12 +12,16 @@ import java.util.Map;
 @ConfigurationProperties(prefix = "olhovivo")
 public record OlhoVivoProperties(
         String token,
-        Polling polling
+        Polling polling,
+        String baseUrl
 ) {
 
     public OlhoVivoProperties {
         if (polling == null) {
             polling = new Polling(60000, Map.of());
+        }
+        if (baseUrl == null || baseUrl.isBlank()) {
+            baseUrl = "https://api.olhovivo.sptrans.com.br/v2.1";
         }
     }
 

@@ -6,6 +6,7 @@ import io.github.raphonzius.lvc.live.domain.bus.VehiclePosition;
 import io.github.raphonzius.lvc.live.domain.streaming.BusStreamingPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +30,9 @@ public class RedisBusStreamingAdapter implements BusStreamingPort {
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
 
+    @Value("${streaming.max-len:1000}")
+    private int streamMaxLen;
+
     @Override
     public void publishPositions(VehiclePosition.PositionResponse positions) {
         if (positions == null) {
@@ -51,6 +55,7 @@ public class RedisBusStreamingAdapter implements BusStreamingPort {
             record.put("hr", positions.hr());
 
             redisTemplate.opsForStream().add(REDIS_STREAM_KEY, record);
+            redisTemplate.opsForStream().trim(REDIS_STREAM_KEY, streamMaxLen, true);
             log.debug("Published bus positions to Redis stream — {} vehicles, hr={}", vehicleCount, positions.hr());
         } catch (JsonProcessingException e) {
             log.error("Failed to serialize bus positions for streaming", e);

@@ -17,7 +17,10 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 
+import io.github.raphonzius.lvc.live.infrastructure.exception.CgespApiException;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -217,22 +220,22 @@ class CgespAdapterTest {
     // -------------------------------------------------------------------------
 
     @Test
-    void fetchFloodings_noContentSection_returnsEmpty() {
+    void fetchFloodings_noContentSection_throwsCgespApiException() {
         when(feignClient.fetchFloodingsHtml("01/04/2026", "Buscar"))
                 .thenReturn("<html><body><p>Sem alagamentos</p></body></html>");
 
-        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE);
-
-        assertThat(result).isEmpty();
+        assertThatThrownBy(() -> adapter.fetchFloodings(HISTORICAL_DATE))
+                .isInstanceOf(CgespApiException.class)
+                .hasMessageContaining("flooding content section not found");
     }
 
     @Test
-    void fetchFloodings_emptyHtml_returnsEmpty() {
+    void fetchFloodings_emptyHtml_throwsCgespApiException() {
         when(feignClient.fetchFloodingsHtml("01/04/2026", "Buscar")).thenReturn("");
 
-        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE);
-
-        assertThat(result).isEmpty();
+        assertThatThrownBy(() -> adapter.fetchFloodings(HISTORICAL_DATE))
+                .isInstanceOf(CgespApiException.class)
+                .hasMessageContaining("flooding content section not found");
     }
 
     @Test

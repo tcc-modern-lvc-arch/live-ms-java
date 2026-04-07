@@ -1,7 +1,9 @@
 package io.github.raphonzius.lvc.live.infrastructure.input.external.cgesp;
 
+import io.github.raphonzius.lvc.live.domain.TimeZones;
 import io.github.raphonzius.lvc.live.domain.flooding.FloodingPoint;
 import io.github.raphonzius.lvc.live.domain.flooding.FloodingPort;
+import io.github.raphonzius.lvc.live.infrastructure.exception.CgespApiException;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +40,7 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class CgespAdapter implements FloodingPort {
 
-    private static final ZoneId SAO_PAULO_TZ = ZoneId.of("America/Sao_Paulo");
+    private static final ZoneId SAO_PAULO_TZ = TimeZones.SAO_PAULO;
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final Pattern TIME_PATTERN = Pattern.compile("De (\\d{2}:\\d{2}) a\\s*(\\d{2}:\\d{2})?");
     private static final Set<String> STATUS_CLASSES = Set.of(
@@ -74,8 +76,9 @@ public class CgespAdapter implements FloodingPort {
         Document doc = Jsoup.parse(html);
         Element content = doc.selectFirst("div.col-alagamentos div.content");
         if (content == null) {
-            log.warn("CGESP: flooding content section not found — no data for date={}", date);
-            return FloodingPoint.FloodData.empty();
+            throw new CgespApiException(
+                    "CGESP: flooding content section not found for date=" + date
+                    + " — HTML structure may have changed", 200);
         }
 
         boolean isToday = date.equals(LocalDate.now(SAO_PAULO_TZ));
@@ -180,6 +183,6 @@ public class CgespAdapter implements FloodingPort {
     }
 
     private static String stripTags(String html) {
-        return html.replaceAll("<[^>]+>", "");
+        return Jsoup.parse(html).text();
     }
 }

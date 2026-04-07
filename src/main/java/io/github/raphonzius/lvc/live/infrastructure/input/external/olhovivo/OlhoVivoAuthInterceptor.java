@@ -22,8 +22,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 public class OlhoVivoAuthInterceptor implements RequestInterceptor {
 
-    private static final String BASE_URL = "https://api.olhovivo.sptrans.com.br/v2.1";
-
     private final String token;
     private final RestClient restClient;
 
@@ -33,7 +31,7 @@ public class OlhoVivoAuthInterceptor implements RequestInterceptor {
     public OlhoVivoAuthInterceptor(OlhoVivoProperties properties) {
         this.token = properties.token();
         this.restClient = RestClient.builder()
-                .baseUrl(BASE_URL)
+                .baseUrl(properties.baseUrl())
                 .build();
     }
 

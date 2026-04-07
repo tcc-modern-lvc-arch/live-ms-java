@@ -6,6 +6,7 @@ import io.github.raphonzius.lvc.live.domain.streaming.VesselStreamingPort;
 import io.github.raphonzius.lvc.live.domain.vessel.Vessel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +31,9 @@ public class RedisVesselStreamingAdapter implements VesselStreamingPort {
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
 
+    @Value("${streaming.max-len:1000}")
+    private int streamMaxLen;
+
     @Override
     public void publishVessel(Vessel vessel) {
         try {
@@ -38,6 +42,7 @@ public class RedisVesselStreamingAdapter implements VesselStreamingPort {
             record.put("data", vesselJson);
 
             redisTemplate.opsForStream().add(REDIS_STREAM_KEY, record);
+            redisTemplate.opsForStream().trim(REDIS_STREAM_KEY, streamMaxLen, true);
             log.debug("Published vessel {} to Redis stream", vessel.id());
         } catch (JsonProcessingException e) {
             log.error("Failed to serialize vessel for streaming", e);

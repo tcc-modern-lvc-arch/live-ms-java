@@ -6,6 +6,7 @@ import io.github.raphonzius.lvc.live.domain.flooding.FloodingPoint;
 import io.github.raphonzius.lvc.live.domain.streaming.FloodingStreamingPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +29,9 @@ public class RedisFloodingStreamingAdapter implements FloodingStreamingPort {
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
 
+    @Value("${streaming.max-len:1000}")
+    private int streamMaxLen;
+
     @Override
     public void publishFloodings(LocalDate date, List<FloodingPoint.FloodData> floodings) {
         if (floodings == null || floodings.isEmpty()) {
@@ -43,6 +47,7 @@ public class RedisFloodingStreamingAdapter implements FloodingStreamingPort {
             record.put("data", json);
 
             redisTemplate.opsForStream().add(REDIS_STREAM_KEY, record);
+            redisTemplate.opsForStream().trim(REDIS_STREAM_KEY, streamMaxLen, true);
             log.debug("Published {} flooding point(s) to Redis stream for date={}", floodings.size(), date);
         } catch (JsonProcessingException e) {
             log.error("Failed to serialize flooding points for streaming", e);
