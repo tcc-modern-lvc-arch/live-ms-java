@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.5</version>
+        <version>4.0.6</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -38,13 +38,6 @@
             <artifactId>spring-cloud-starter-openfeign</artifactId>
             <version>${spring-cloud.version}</version>
             <scope>compile</scope>
-            <exclusions>
-                <exclusion>
-                    <!-- Excluded for spring-cloud-starter-openfeign:5.0.1 due declared CVE https://www.mend.io/vulnerability-database/CVE-2025-48976 -->
-                    <groupId>commons-fileupload</groupId>
-                    <artifactId>commons-fileupload</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>

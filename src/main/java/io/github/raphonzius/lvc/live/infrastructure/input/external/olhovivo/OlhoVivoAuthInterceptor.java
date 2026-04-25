@@ -58,7 +58,7 @@ public class OlhoVivoAuthInterceptor implements RequestInterceptor {
             ResponseEntity<Boolean> response = restClient.post()
                     .uri("/Login/Autenticar?token={token}", token)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(new byte[0])
+                    .body("{}")
                     .retrieve()
                     .toEntity(Boolean.class);
 

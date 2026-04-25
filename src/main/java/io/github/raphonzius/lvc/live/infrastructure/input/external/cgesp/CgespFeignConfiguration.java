@@ -7,7 +7,6 @@ import feign.codec.DecodeException;
 import feign.codec.Decoder;
 import feign.codec.ErrorDecoder;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -17,7 +16,6 @@ import java.nio.charset.StandardCharsets;
  * Feign configuration for the CGESP HTML scraper client.
  * Registers a raw-string decoder (bypasses JSON) and a custom error decoder.
  */
-@Configuration
 public class CgespFeignConfiguration {
 
     /**
