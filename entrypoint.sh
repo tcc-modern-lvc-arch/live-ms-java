@@ -1,5 +1,5 @@
 #!/bin/sh
-# Generates the AppCDS archive on the very first start.
+ # Generates the AppCDS archive on the very first start.
 # Subsequent starts skip training and use the cached archive.
 JSA=/data/app.jsa
 
