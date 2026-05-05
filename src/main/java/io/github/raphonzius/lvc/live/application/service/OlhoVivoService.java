@@ -18,7 +18,7 @@ import java.util.Map;
  * Targeted polling workflow:
  *   1. For each configured lineTerms → /Linha/Buscar → resolve cl codes
  *   2. For each cl → /Posicao/Linha → vehicle positions
- *   3. Publish each PositionResponse to Redis buses:stream
+ *   3. Publish each PositionResponse to Event Hub via gRPC
  */
 @Slf4j
 @Service
@@ -31,7 +31,7 @@ public class OlhoVivoService {
 
     /**
      * Executes the targeted polling workflow:
-     * searches configured line terms → filters by {@code tl} → fetches positions per line → publishes to Redis.
+     * searches configured line terms → filters by {@code tl} → fetches positions per line → publishes to Event Hub.
      */
     public void fetchAndStreamVehiclePositions() {
         Map<String, List<Integer>> lineTerms = properties.polling().lineTerms();

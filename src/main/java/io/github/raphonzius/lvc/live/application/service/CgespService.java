@@ -39,7 +39,7 @@ public class CgespService {
     private int maxRangeDays;
 
     /**
-     * Fetches today's flooding points (São Paulo timezone) and publishes them to Redis.
+     * Fetches today's flooding points (São Paulo timezone) and publishes them to Event Hub.
      */
     public void fetchAndStreamFloodings() {
         LocalDate today = LocalDate.now(SAO_PAULO_TZ);

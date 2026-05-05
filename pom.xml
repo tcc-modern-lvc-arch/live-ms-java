@@ -25,6 +25,11 @@
 
         <!-- General Dependencies Version -->
         <jsoup.version>1.22.1</jsoup.version>
+
+        <!-- gRPC / Protobuf -->
+        <grpc.version>1.79.0</grpc.version>
+        <protobuf.version>4.34.0</protobuf.version>
+        <proto-shared.version>1.0.0</proto-shared.version>
     </properties>
 
     <dependencies>
@@ -54,9 +59,33 @@
             <scope>compile</scope>
         </dependency>
 
+        <!-- proto-shared: gRPC contracts for event-hub -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
+            <groupId>io.github.raphonzius.lvc</groupId>
+            <artifactId>proto-shared</artifactId>
+            <version>${proto-shared.version}</version>
+        </dependency>
+
+        <!-- gRPC client -->
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-netty-shaded</artifactId>
+            <version>${grpc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+            <version>${grpc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
+            <version>${grpc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>${protobuf.version}</version>
         </dependency>
 
         <dependency>

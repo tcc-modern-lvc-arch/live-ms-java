@@ -8,13 +8,6 @@ spring:
     virtual:
       enabled: true
 
-  # Redis Configuration: Used for streaming and data persistence
-  data:
-    redis:
-      host: localhost
-      port: 6379
-      timeout: 10000ms
-
   # API Versioning (Spring Boot 4 native support)
   mvc:
     apiversion:
@@ -124,9 +117,14 @@ springdoc:
     url: /openapi.yaml      # Serve the hand-crafted spec from static/
     path: /swagger-ui.html  # UI available at /swagger-ui.html
 
-# Redis stream retention — approximate trim (MAXLEN ~) applied after each publish
-streaming:
-  max-len: 1000
+# Event Hub gRPC Configuration
+# live-ms-java publishes events to the event-hub via gRPC
+event-hub:
+  grpc:
+    host: localhost
+    port: 50051
+    # area_id is assigned by virtual-areas-ms-java for routing
+    # live-ms-java publishes with LVC origin = LIVE
 
 # Logging Configuration
 logging:

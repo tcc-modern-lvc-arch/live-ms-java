@@ -11,10 +11,10 @@ import org.springframework.http.HttpStatus;
  * Adding a new sealed subtype automatically forces it to supply its own response status.</p>
  *
  * <p>Sealed — permitted subtypes: {@link AisApiException}, {@link CgespApiException},
- * {@link OlhoVivoApiException}, {@link RedisStreamingException}.</p>
+ * {@link OlhoVivoApiException}.</p>
  */
 public sealed class InfrastructureException extends RuntimeException
-        permits AisApiException, CgespApiException, OlhoVivoApiException, RedisStreamingException {
+        permits AisApiException, CgespApiException, OlhoVivoApiException {
 
     private final HttpStatus httpStatus;
 

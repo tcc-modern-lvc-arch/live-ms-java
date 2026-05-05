@@ -4,7 +4,7 @@ info:
   description: |
     Real-time maritime and urban transit data adapter.
     Polls the AIS API for vessel positions and the SPTrans OlhoVivo API for
-    São Paulo bus positions, then streams results to Redis.
+    São Paulo bus positions, then streams results to Event Hub via gRPC.
   version: "1.0"
   contact:
     name: Rafael Pereira
@@ -77,7 +77,7 @@ paths:
       summary: Trigger manual AIS poll
       description: |
         Immediately fetches vessel positions from the AIS API and publishes
-        them to the Redis `vessels:stream`.
+        them to Event Hub via gRPC.
       operationId: manualPollVessels
       parameters:
         - $ref: "#/components/parameters/ApiVersion"
@@ -187,7 +187,7 @@ paths:
       summary: Trigger manual CGESP poll
       description: |
         Immediately fetches today's flooding points from CGESP and publishes
-        them to the Redis `floodings:stream`.
+        them to Event Hub via gRPC.
       operationId: manualPollFloodings
       parameters:
         - $ref: "#/components/parameters/ApiVersion"
@@ -276,7 +276,7 @@ paths:
         1. Searches each configured `line-terms` via /Linha/Buscar
         2. Resolves `cl` codes from results
         3. Fetches positions per line via /Posicao/Linha
-        4. Publishes each response to the Redis `buses:stream`
+        4. Publishes each response to Event Hub via gRPC
       operationId: manualPollBuses
       parameters:
         - $ref: "#/components/parameters/ApiVersion"

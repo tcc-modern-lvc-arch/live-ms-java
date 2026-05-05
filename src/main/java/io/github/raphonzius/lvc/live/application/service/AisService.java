@@ -52,7 +52,7 @@ public class AisService {
         var vessels = aisPort.fetchVessels(lonMin, latMin, lonMax, latMax, zoom);
 
         if (vessels != null && !vessels.isEmpty()) {
-            log.info("Streaming {} vessels to Redis", vessels.size());
+            log.info("Streaming {} vessels to Event Hub", vessels.size());
             vesselStreamingPort.publishVesselBatch(vessels.stream());
         }
     }

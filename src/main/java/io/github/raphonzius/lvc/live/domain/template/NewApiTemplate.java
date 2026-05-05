@@ -235,7 +235,7 @@ package io.github.raphonzius.lvc.live.domain.template;
  * ✅ Domain logic is independent
  * ✅ Easy to add new APIs without touching existing code
  * ✅ Easy to test (mock implementations via ports)
- * ✅ Easy to swap implementations (Redis → Kafka, etc.)
+ * ✅ Easy to swap implementations (gRPC → Kafka, etc.)
  * ✅ Consistent error handling and resilience
  * ✅ Clear separation of concerns
  */

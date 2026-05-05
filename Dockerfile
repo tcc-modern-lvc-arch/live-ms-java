@@ -1,49 +1,41 @@
 # ─── Stage 1: Build ───────────────────────────────────────────────────────────
-FROM maven:3.9.6-eclipse-temurin-25 AS builder
+FROM maven:3.9-eclipse-temurin-25 AS build
+WORKDIR /workspace
 
-WORKDIR /build
+# POM-only layer — Maven dependency resolution cached until any pom.xml changes
+COPY live-ms-java/pom.xml ./live-ms-java/pom.xml
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn -f live-ms-java/pom.xml dependency:go-offline -q 2>/dev/null || true
 
-# Cache deps layer — only invalidates on pom.xml change
-COPY pom.xml .
-RUN mvn dependency:go-offline -q
+# Full build
+COPY live-ms-java/ ./live-ms-java/
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn -f live-ms-java/pom.xml package -DskipTests -q
 
-COPY src/ src/
-RUN mvn clean package -DskipTests -o
-
-# ─── Stage 2: Extracter ───────────────────────────────────────────────────────
-# Boot app once with spring.context.exit=onRefresh to dump AppCDS archive.
-# Redis connection is lazy — context refresh completes without Redis present.
-FROM bellsoft/liberica-runtime-container:jre-25-cds-slim-glibc AS extracter
-
+# ─── Stage 2: Spring Boot layer extraction ────────────────────────────────────
+FROM bellsoft/liberica-runtime-container:jre-25-cds-slim-musl AS layers
 WORKDIR /app
-COPY --from=builder /build/target/LVC*.jar app.jar
-
-RUN java \
-    -Dspring.context.exit=onRefresh \
-    -XX:ArchiveClassesAtExit=application.jsa \
-    -jar app.jar
+COPY --from=build /workspace/live-ms-java/target/live-ms-java.jar app.jar
+# Splits the fat JAR into four change-frequency buckets for Docker layer reuse
+RUN java -Djarmode=layertools -jar app.jar extract
 
 # ─── Stage 3: Runtime ─────────────────────────────────────────────────────────
-FROM bellsoft/liberica-runtime-container:jre-25-cds-slim-glibc
-
+FROM bellsoft/liberica-runtime-container:jre-25-cds-slim-musl
 WORKDIR /app
 
-RUN groupadd -r spring && useradd -r -g spring -s /sbin/nologin spring
+# Layers ordered slowest→fastest changing: only 'application' is rebuilt on
+# code changes; library and loader layers are reused from the Docker cache.
+COPY --from=layers /app/dependencies/          ./
+COPY --from=layers /app/spring-boot-loader/    ./
+COPY --from=layers /app/snapshot-dependencies/ ./
+COPY --from=layers /app/application/           ./
 
-COPY --from=builder /build/target/*.jar app.jar
-COPY --from=extracter /app/application.jsa application.jsa
+# CDS archive generated at first boot, persisted on a named volume across restarts
+VOLUME ["/data"]
 
-RUN chown -R spring:spring /app
-USER spring
-
-ENV JDK_JAVA_OPTIONS="\
-  -XX:SharedArchiveFile=application.jsa \
-  -XX:+UseG1GC \
-  -XX:+UseContainerSupport \
-  -XX:MaxRAMPercentage=75.0 \
-  -XX:InitialRAMPercentage=50.0 \
-  -XX:+ExitOnOutOfMemoryError"
+COPY live-ms-java/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["/entrypoint.sh"]

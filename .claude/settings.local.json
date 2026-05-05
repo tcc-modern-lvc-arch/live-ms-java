@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./mvnw clean:*)",
+      "Bash(mvn -version)",
+      "mcp__intellij__build_project",
+      "mcp__intellij__read_file",
+      "Bash(./mvnw test:*)",
+      "Bash(cmd.exe /c \"mvnw.cmd test -Dtest=CgespAdapterTest,CgespServiceTest -q 2>&1\")",
+      "Bash(cmd.exe /c \"mvnw.cmd test -Dtest=CgespAdapterTest,CgespServiceTest 2>&1\")",
+      "Bash(cmd.exe /c \"mvnw.cmd test -Dtest=CgespAdapterTest,CgespServiceTest > C:/Users/rafae/test-output.txt 2>&1\")",
+      "Read(//c/Users/rafae/**)",
+      "mcp__intellij__execute_terminal_command",
+      "Read(//tmp/**)",
+      "Bash(wc -l /tmp/adversarial-review.BPwSZI/*.md)",
+      "Bash(claude -p \"Reply with: WORKING\")",
+      "mcp__intellij__get_run_configurations",
+      "mcp__intellij__execute_run_configuration",
+      "mcp__code-review-graph__build_or_update_graph_tool",
+      "mcp__code-review-graph__get_review_context_tool",
+      "mcp__code-review-graph__generate_wiki_tool",
+      "Bash(./mvnw dependency:tree -Dincludes=tools.jackson:,com.fasterxml.jackson:)",
+      "Bash(java -version)",
+      "PowerShell(& \"C:\\\\Users\\\\rafae\\\\.m2\\\\wrapper\\\\dists\\\\apache-maven-3.9.12-bin\\\\5nmfsn99br87k5d4ajlekdq10k\\\\apache-maven-3.9.12\\\\bin\\\\mvn.cmd\" dependency:tree \"-Dincludes=tools.jackson:,com.fasterxml.jackson:\" -f \"C:\\\\Users\\\\rafae\\\\TCC\\\\live-ms-java\\\\live-ms-java\\\\pom.xml\" 2>&1 | Select-String -Pattern \"jackson|ERROR\" | Select-Object -First 60)",
+      "mcp__intellij__get_project_dependencies",
+      "mcp__intellij__get_file_text_by_path",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  }
+}
