@@ -1,0 +1,45 @@
+{
+  "repo_notes": [
+    {
+      "content": "This is live-ms-java, the Live component of the TCC LVC Smart Cities simulation platform. It is a Spring Boot 4 microservice (Java 25) that ingests real-time geo-spatial data from three external sources and publishes standardized events to the Event Hub via gRPC. It represents the 'L' in LVC — real people operating real systems, feeding live data into the platform.\n\nStack: Java 25 (language, with Virtual Threads, sealed classes, records, pattern matching), Spring Boot 4 (application framework), Hexagonal Architecture / Ports & Adapters (domain isolation), gRPC (streaming to Event Hub), Feign (declarative HTTP clients), Resilience4j (Circuit Breaker), Jsoup (HTML scraping), Docker (containerization).\n\nThree data adapters: (1) AisAdapter — vessel tracking via AISFriends API (Feign client, no auth), publishes vessel positions with lat/lon/speed/heading; (2) OlhoVivoAdapter — SPTrans bus positions via OlhoVivo API (cookie-based session auth with lazy login and auto-reauthentication on 401), publishes bus locations per transit line; (3) CgespAdapter — flooding alerts via CGESP web scraping (Jsoup HTML parsing with timezone-aware end-time inference), publishes flooding points with zone/neighborhood/status.\n\nEach adapter follows a uniform pattern: @Scheduled polling → domain port → infrastructure adapter → external API → back through application service → streaming port → gRPC streaming adapter → Event Hub. Circuit Breakers (Resilience4j) protect against external API failures with graceful degradation (empty list fallback). Virtual Threads (Java 21+) enable high-concurrency polling with minimal overhead.\n\nKey architectural patterns: Hexagonal Architecture (domain layer with zero framework imports, ports as plain Java interfaces, adapters in infrastructure), Circuit Breaker (fault isolation per external API), Polling Consumer (scheduled ingestion with configurable intervals), Contract-First Integration (proto-shared stubs for gRPC).",
+      "author": "Rafael Pereira"
+    }
+  ],
+  "pages": [
+    {
+      "title": "Architecture Overview",
+      "purpose": "High-level overview of live-ms-java's role as the Live data ingestion layer in the LVC platform. Explain the Hexagonal Architecture structure (domain/application/infrastructure layers), the uniform data flow pattern across all three adapters (scheduler → service → port → adapter → external API → streaming port → gRPC → Event Hub), and the technology stack. Include a component diagram showing the three adapters, application services, streaming ports, and the Event Hub connection."
+    },
+    {
+      "title": "AIS Vessel Tracking Adapter",
+      "purpose": "Document the AIS (Automatic Identification System) adapter for maritime vessel tracking. Cover: the AisPort domain interface, AisAdapter Feign client against aisfriends.com, the Vessel sealed interface + VesselData record model, AisService orchestration, AisPollingScheduler (@Scheduled with configurable interval), VesselStreamingPort → GrpcVesselStreamingAdapter → Event Hub gRPC publish flow, Circuit Breaker configuration (resilience4j), and the REST endpoints (GET /api/v1/vessels/bounding-box, POST /api/v1/vessels/poll).",
+      "parent": "Architecture Overview"
+    },
+    {
+      "title": "OlhoVivo Bus Tracking Adapter",
+      "purpose": "Document the SPTrans OlhoVivo adapter for real-time bus position tracking. Cover: the BusPort domain interface, OlhoVivoAdapter with cookie-based session authentication (OlhoVivoAuthInterceptor — lazy POST /Login/Autenticar, JSESSIONID caching, auto-reauthentication on 401), bus line search and position endpoints, BusPollingScheduler, BusStreamingPort → GrpcBusStreamingAdapter → Event Hub flow, Circuit Breaker configuration, and REST endpoints (GET /api/v1/buses/lines, GET /api/v1/buses/positions/line, POST /api/v1/buses/poll).",
+      "parent": "Architecture Overview"
+    },
+    {
+      "title": "CGESP Flooding Adapter",
+      "purpose": "Document the CGESP (Centro de Gerenciamento de Emergências) adapter for urban flooding alerts. Cover: the FloodingPort domain interface, CgespAdapter with Jsoup HTML scraping (parsing zone from h1.tit-bairros, neighborhood from td.bairro, flooding points from div.ponto-de-alagamento), timezone-aware end-time inference (current SP time if today, 23:59 if historical), CgespPollingScheduler, FloodingStreamingPort → GrpcFloodingStreamingAdapter → Event Hub flow, and REST endpoints (GET /api/v1/floodings, POST /api/v1/floodings/poll).",
+      "parent": "Architecture Overview"
+    },
+    {
+      "title": "gRPC Streaming to Event Hub",
+      "purpose": "Document the gRPC output pipeline that publishes Live events to the Event Hub. Cover: the three streaming ports (VesselStreamingPort, BusStreamingPort, FloodingStreamingPort) as domain interfaces, the three Grpc*StreamingAdapter implementations in infrastructure/output/streaming/grpc/, the EventHub gRPC client configuration (ManagedChannel to localhost:50051, stub beans), the proto-shared dependency for generated stubs, the topic naming conventions, and how Virtual and Constructive components consume these events downstream."
+    },
+    {
+      "title": "Polling Scheduler & Circuit Breakers",
+      "purpose": "Document the scheduled polling infrastructure and resilience patterns. Cover: the three @Scheduled PollingScheduler classes (fixed-rate with configurable intervals in application.yaml), Virtual Threads enablement (spring.threads.virtual.enabled: true), Resilience4j Circuit Breaker configuration per adapter (sliding window, failure rate threshold, wait duration, fallback to empty list), Scoped Values (JEP 506) for context propagation across virtual threads, and how to tune polling intervals and circuit breaker parameters."
+    },
+    {
+      "title": "REST API",
+      "purpose": "Document all REST endpoints exposed by VesselController, OlhoVivoController, and CgespController. Cover: endpoint paths, HTTP methods, request/response DTOs, query parameters (bounding box coordinates, date filters, line codes), manual polling triggers (POST /poll), health checks, and the GlobalExceptionHandler. Include the OpenAPI/Swagger UI access and the JacksonConfiguration for JSON serialization."
+    },
+    {
+      "title": "Configuration & Secrets",
+      "purpose": "Document the application.yaml configuration: polling intervals per adapter, external API base URLs (AISFriends, OlhoVivo, CGESP), Event Hub gRPC target (host/port), Circuit Breaker parameters, Virtual Threads toggle, and server port (8080). Cover the Vault integration for external API tokens (OlhoVivo token fetched from Vault KV v2 at secret/live-ms-java), the .env fallback pattern, and the Docker Compose environment setup."
+    }
+  ]
+}
