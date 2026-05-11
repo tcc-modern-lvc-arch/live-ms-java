@@ -17,20 +17,9 @@ import io.github.raphonzius.lvc.live.infrastructure.config.properties.EventHubPr
 
 import java.time.Instant;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
-/**
- * gRPC streaming adapter for bus position data.
- * Publishes SPTrans OlhoVivo vehicle positions to the EventHub via gRPC.
- *
- * Uses Java 21 patterns:
- * - Record patterns with exhaustive switch
- * - Pattern matching for instanceof elimination
- * - Unnamed variables (_)
- * - Streamlined Optional chains
- * - Type inference (var) for local variables
- */
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -39,7 +28,7 @@ public class GrpcBusStreamingAdapter implements BusStreamingPort {
     private final EventHubGrpc.EventHubBlockingStub eventHubStub;
     private final EventHubProperties eventHubProperties;
 
-    private final BiFunction<BusVehicle.VehicleData, String, EventRequest> requestBuilder = (vehicle, lineCode) -> {
+    private EventRequest buildRequest(BusVehicle.VehicleData vehicle, String lineCode) {
         var timestampMs = Instant.now().toEpochMilli();
         var busPayload = BusPayload.newBuilder()
                 .setLocation(Location.newBuilder()
@@ -60,7 +49,7 @@ public class GrpcBusStreamingAdapter implements BusStreamingPort {
                 .setEntityId(String.valueOf(vehicle.p()))
                 .setBus(busPayload)
                 .build();
-    };
+    }
 
     @Override
     public void publishPositions(VehiclePosition.PositionResponse positions) {
@@ -79,7 +68,7 @@ public class GrpcBusStreamingAdapter implements BusStreamingPort {
                                       long timestampMs) {
         try {
             var lineCode = findLineCode(positions, vehicle);
-            var request = requestBuilder.apply(vehicle, lineCode);
+            var request = buildRequest(vehicle, lineCode);
             eventHubStub.sendEvent(request);
             log.debug("Published bus position to EventHub — vehicle={}, line={}", vehicle.p(), lineCode);
         } catch (Exception e) {

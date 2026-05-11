@@ -1,9 +1,12 @@
 services:
   live-adapter:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../..
+      dockerfile: live-ms-java/live-ms-java/Dockerfile
     container_name: live-adapter
+    environment:
+      - SPRING_CLOUD_VAULT_HOST=shared-vault
+      - EVENT_HUB_GRPC_HOST=event-hub
     ports:
       - "8080:8080"
     volumes:

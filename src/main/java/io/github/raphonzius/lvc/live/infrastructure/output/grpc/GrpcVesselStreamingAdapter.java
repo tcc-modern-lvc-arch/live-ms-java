@@ -16,20 +16,8 @@ import io.github.raphonzius.lvc.live.infrastructure.config.properties.EventHubPr
 
 import java.time.Instant;
 import java.util.Objects;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
-/**
- * gRPC streaming adapter for vessel data.
- * Publishes AIS vessel data to the EventHub via gRPC.
- *
- * Uses Java 21 patterns:
- * - Sealed interface matching (switch on Vessel type)
- * - Record patterns with unnamed variables
- * - Functional composition for payload building
- * - Pattern matching for instanceof (where applicable)
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -37,16 +25,6 @@ public class GrpcVesselStreamingAdapter implements VesselStreamingPort {
 
     private final EventHubGrpc.EventHubBlockingStub eventHubStub;
     private final EventHubProperties eventHubProperties;
-
-    // Functional builders for cleaner composition
-    private final Function<Vessel.VesselData, Location> toLocation = data ->
-            Location.newBuilder()
-                    .setLat(data.latitude())
-                    .setLon(data.longitude())
-                    .build();
-
-    private final BiFunction<Vessel.VesselData, Long, String> toEntityId = (data, timestampMs) ->
-            Objects.requireNonNullElse(data.mmsi(), data.id()).toString();
 
     @Override
     public void publishVessel(Vessel vessel) {
@@ -70,8 +48,12 @@ public class GrpcVesselStreamingAdapter implements VesselStreamingPort {
         return switch (vessel) {
             case Vessel.VesselData data -> {
 
-                var payload = buildPayload(data, toLocation.apply(data));
-                var entityId = toEntityId.apply(data, timestampMs);
+                var location = Location.newBuilder()
+                        .setLat(data.latitude())
+                        .setLon(data.longitude())
+                        .build();
+                var payload = buildPayload(data, location);
+                var entityId = Objects.requireNonNullElse(data.mmsi(), data.id()).toString();
 
                 yield EventRequest.newBuilder()
                         .setAreaId(eventHubProperties.grpc().areaId())

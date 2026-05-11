@@ -25,7 +25,9 @@
       "mcp__intellij__get_project_dependencies",
       "mcp__intellij__get_file_text_by_path",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(xargs grep -l \"RedisVesselStreamingAdapter\")",
+      "Bash(rtk ls *)"
     ]
   }
 }

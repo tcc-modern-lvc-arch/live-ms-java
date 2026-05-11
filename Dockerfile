@@ -2,15 +2,20 @@
 FROM maven:3.9-eclipse-temurin-25 AS build
 WORKDIR /workspace
 
+# Install proto-shared (local artifact, not on Maven Central)
+COPY proto-shared/ ./proto-shared/
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn -f proto-shared/pom.xml install -DskipTests -q
+
 # POM-only layer — Maven dependency resolution cached until any pom.xml changes
-COPY live-ms-java/pom.xml ./live-ms-java/pom.xml
+COPY live-ms-java/live-ms-java/pom.xml ./live-ms-java/pom.xml
 RUN --mount=type=cache,target=/root/.m2 \
     mvn -f live-ms-java/pom.xml dependency:go-offline -q 2>/dev/null || true
 
 # Full build
-COPY live-ms-java/ ./live-ms-java/
+COPY live-ms-java/live-ms-java/ ./live-ms-java/
 RUN --mount=type=cache,target=/root/.m2 \
-    mvn -f live-ms-java/pom.xml package -DskipTests -q
+    mvn -f live-ms-java/pom.xml clean package -DskipTests -q
 
 # ─── Stage 2: Spring Boot layer extraction ────────────────────────────────────
 FROM bellsoft/liberica-runtime-container:jre-25-cds-slim-musl AS layers
@@ -33,7 +38,7 @@ COPY --from=layers /app/application/           ./
 # CDS archive generated at first boot, persisted on a named volume across restarts
 VOLUME ["/data"]
 
-COPY live-ms-java/entrypoint.sh /entrypoint.sh
+COPY live-ms-java/live-ms-java/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 EXPOSE 8080
