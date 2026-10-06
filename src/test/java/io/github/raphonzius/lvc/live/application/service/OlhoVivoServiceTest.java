@@ -1,10 +1,10 @@
 package io.github.raphonzius.lvc.live.application.service;
 
 import io.github.raphonzius.lvc.live.domain.bus.BusLine;
+import io.github.raphonzius.lvc.live.domain.bus.BusPositionPersistencePort;
 import io.github.raphonzius.lvc.live.domain.bus.BusVehicle;
 import io.github.raphonzius.lvc.live.domain.bus.OlhoVivoPort;
 import io.github.raphonzius.lvc.live.domain.bus.VehiclePosition;
-import io.github.raphonzius.lvc.live.domain.streaming.BusStreamingPort;
 import io.github.raphonzius.lvc.live.infrastructure.config.properties.OlhoVivoProperties;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,7 +31,7 @@ class OlhoVivoServiceTest {
     private OlhoVivoPort olhoVivoPort;
 
     @Mock
-    private BusStreamingPort busStreamingPort;
+    private BusPositionPersistencePort busPositionPersistencePort;
 
     @Mock
     private OlhoVivoProperties properties;
@@ -40,25 +40,25 @@ class OlhoVivoServiceTest {
     private OlhoVivoService service;
 
     // -------------------------------------------------------------------------
-    // fetchAndStreamVehiclePositions — empty config
+    // fetchAndPersistVehiclePositions — empty config
     // -------------------------------------------------------------------------
 
     @Test
-    void fetchAndStreamVehiclePositions_emptyLineTerms_skipsWithNoInteractions() {
+    void fetchAndPersistVehiclePositions_emptyLineTerms_skipsWithNoInteractions() {
         when(properties.polling()).thenReturn(new OlhoVivoProperties.Polling(60000, Map.of()));
 
-        service.fetchAndStreamVehiclePositions();
+        service.fetchAndPersistVehiclePositions();
 
         verifyNoInteractions(olhoVivoPort);
-        verifyNoInteractions(busStreamingPort);
+        verifyNoInteractions(busPositionPersistencePort);
     }
 
     // -------------------------------------------------------------------------
-    // fetchAndStreamVehiclePositions — tl filtering
+    // fetchAndPersistVehiclePositions — tl filtering
     // -------------------------------------------------------------------------
 
     @Test
-    void fetchAndStreamVehiclePositions_publishesMatchingTlLines() {
+    void fetchAndPersistVehiclePositions_persistsMatchingTlLines() {
         when(properties.polling()).thenReturn(new OlhoVivoProperties.Polling(60000, Map.of("178L", List.of(10))));
         List<BusLine.LineData> lines = List.of(lineData(1001, 10), lineData(1002, 21));
         when(olhoVivoPort.searchLines("178L")).thenReturn(lines);
@@ -66,26 +66,26 @@ class OlhoVivoServiceTest {
         VehiclePosition.PositionResponse pos = positionResponse(1001, List.of(vehicleData(42)));
         when(olhoVivoPort.positionsByLine(1001)).thenReturn(pos);
 
-        service.fetchAndStreamVehiclePositions();
+        service.fetchAndPersistVehiclePositions();
 
         verify(olhoVivoPort).positionsByLine(1001);
         verify(olhoVivoPort, never()).positionsByLine(1002);
-        verify(busStreamingPort).publishPositions(pos);
+        verify(busPositionPersistencePort).savePositions(1001, "178L-10", "18:00", pos.vs());
     }
 
     @Test
-    void fetchAndStreamVehiclePositions_filtersOutNonMatchingTl() {
+    void fetchAndPersistVehiclePositions_filtersOutNonMatchingTl() {
         when(properties.polling()).thenReturn(new OlhoVivoProperties.Polling(60000, Map.of("5000", List.of(10))));
         List<BusLine.LineData> lines = List.of(lineData(2001, 21), lineData(2002, 32));
         when(olhoVivoPort.searchLines("5000")).thenReturn(lines);
 
-        service.fetchAndStreamVehiclePositions();
+        service.fetchAndPersistVehiclePositions();
 
-        verifyNoInteractions(busStreamingPort);
+        verifyNoInteractions(busPositionPersistencePort);
     }
 
     @Test
-    void fetchAndStreamVehiclePositions_multipleTlValuesAllMatch() {
+    void fetchAndPersistVehiclePositions_multipleTlValuesAllMatch() {
         when(properties.polling()).thenReturn(
                 new OlhoVivoProperties.Polling(60000, Map.of("8000", List.of(10, 21))));
         List<BusLine.LineData> lines = List.of(lineData(3001, 10), lineData(3002, 21), lineData(3003, 32));
@@ -96,19 +96,19 @@ class OlhoVivoServiceTest {
         when(olhoVivoPort.positionsByLine(3001)).thenReturn(pos1);
         when(olhoVivoPort.positionsByLine(3002)).thenReturn(pos2);
 
-        service.fetchAndStreamVehiclePositions();
+        service.fetchAndPersistVehiclePositions();
 
-        verify(busStreamingPort).publishPositions(pos1);
-        verify(busStreamingPort).publishPositions(pos2);
+        verify(busPositionPersistencePort).savePositions(3001, "178L-10", "18:00", pos1.vs());
+        verify(busPositionPersistencePort).savePositions(3002, "178L-21", "18:00", pos2.vs());
         verify(olhoVivoPort, never()).positionsByLine(3003);
     }
 
     // -------------------------------------------------------------------------
-    // fetchAndStreamVehiclePositions — deduplication
+    // fetchAndPersistVehiclePositions — deduplication
     // -------------------------------------------------------------------------
 
     @Test
-    void fetchAndStreamVehiclePositions_deduplicatesClAcrossTerms() {
+    void fetchAndPersistVehiclePositions_deduplicatesClAcrossTerms() {
         // two terms both resolve to cl=1001 with tl=10
         when(properties.polling()).thenReturn(new OlhoVivoProperties.Polling(60000,
                 Map.of("termA", List.of(10), "termB", List.of(10))));
@@ -119,37 +119,37 @@ class OlhoVivoServiceTest {
         VehiclePosition.PositionResponse pos = positionResponse(1001, List.of(vehicleData(99)));
         when(olhoVivoPort.positionsByLine(1001)).thenReturn(pos);
 
-        service.fetchAndStreamVehiclePositions();
+        service.fetchAndPersistVehiclePositions();
 
         // cl=1001 fetched only once despite appearing twice
         verify(olhoVivoPort).positionsByLine(1001);
-        verify(busStreamingPort).publishPositions(pos);
+        verify(busPositionPersistencePort).savePositions(1001, "178L-10", "18:00", pos.vs());
     }
 
     // -------------------------------------------------------------------------
-    // fetchAndStreamVehiclePositions — skip empty/null responses
+    // fetchAndPersistVehiclePositions — skip empty/null responses
     // -------------------------------------------------------------------------
 
     @Test
-    void fetchAndStreamVehiclePositions_skipsEmptyPositionResponse() {
+    void fetchAndPersistVehiclePositions_skipsEmptyPositionResponse() {
         when(properties.polling()).thenReturn(new OlhoVivoProperties.Polling(60000, Map.of("178L", List.of(10))));
         when(olhoVivoPort.searchLines("178L")).thenReturn(List.of(lineData(1001, 10)));
         when(olhoVivoPort.positionsByLine(1001)).thenReturn(VehiclePosition.PositionResponse.empty());
 
-        service.fetchAndStreamVehiclePositions();
+        service.fetchAndPersistVehiclePositions();
 
-        verifyNoInteractions(busStreamingPort);
+        verifyNoInteractions(busPositionPersistencePort);
     }
 
     @Test
-    void fetchAndStreamVehiclePositions_skipsNullPositionResponse() {
+    void fetchAndPersistVehiclePositions_skipsNullPositionResponse() {
         when(properties.polling()).thenReturn(new OlhoVivoProperties.Polling(60000, Map.of("178L", List.of(10))));
         when(olhoVivoPort.searchLines("178L")).thenReturn(List.of(lineData(1001, 10)));
         when(olhoVivoPort.positionsByLine(1001)).thenReturn(null);
 
-        service.fetchAndStreamVehiclePositions();
+        service.fetchAndPersistVehiclePositions();
 
-        verifyNoInteractions(busStreamingPort);
+        verifyNoInteractions(busPositionPersistencePort);
     }
 
     // -------------------------------------------------------------------------
@@ -165,7 +165,7 @@ class OlhoVivoServiceTest {
 
         assertThat(result).isSameAs(expected);
         verify(olhoVivoPort).searchLines("178L");
-        verifyNoInteractions(busStreamingPort);
+        verifyNoInteractions(busPositionPersistencePort);
     }
 
     @Test
@@ -177,7 +177,7 @@ class OlhoVivoServiceTest {
 
         assertThat(result).isSameAs(expected);
         verify(olhoVivoPort).positionsByLine(1001);
-        verifyNoInteractions(busStreamingPort);
+        verifyNoInteractions(busPositionPersistencePort);
     }
 
     // -------------------------------------------------------------------------

@@ -1,6 +1,7 @@
 package io.github.raphonzius.lvc.live.infrastructure.input.external.olhovivo;
 
 import feign.Logger;
+import feign.Retryer;
 import feign.codec.ErrorDecoder;
 import io.github.raphonzius.lvc.live.infrastructure.config.properties.OlhoVivoProperties;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +22,12 @@ public class OlhoVivoFeignConfiguration {
     @Bean
     public ErrorDecoder olhoVivoErrorDecoder(OlhoVivoAuthInterceptor authInterceptor) {
         return new OlhoVivoErrorDecoder(authInterceptor);
+    }
+
+    /** Allows one retry so the 401→re-auth→retry cycle completes transparently. */
+    @Bean
+    public Retryer olhoVivoRetryer() {
+        return new Retryer.Default(0, 0, 2);
     }
 
     /** Feign log level — {@code BASIC} logs method, URL, status, and elapsed time. */

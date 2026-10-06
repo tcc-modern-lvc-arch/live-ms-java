@@ -40,7 +40,7 @@ public interface OlhoVivoApi {
     );
 
     /**
-     * Manually triggers an OlhoVivo polling cycle and publishes results to {@code buses:stream}.
+     * Manually triggers an OlhoVivo polling cycle and persists the results in PostgreSQL.
      *
      * @return 202 Accepted with confirmation message
      */

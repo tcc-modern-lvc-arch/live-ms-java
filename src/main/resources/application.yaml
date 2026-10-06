@@ -16,23 +16,25 @@ spring:
       use.header: "X-API-Version"
 
   config:
-    # 'optional:' skips Vault if unavailable (dev/test without Vault running).
-    # In production, ensure Vault is reachable; missing secrets cause NullPointerExceptions.
-    import: "optional:vault://"
+    import:
+      - "optional:file:.env[.properties]"
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 5
+
+  sql:
+    init:
+      mode: always
+      schema-locations:
+        - classpath:postgresql-schema-migration.sql
+        - classpath:schema.sql
 
   # Spring Cloud Circuit Breaker: Enables Resilience4j integration
   cloud:
-    vault:
-      host: localhost
-      port: 8200
-      scheme: http
-      authentication: TOKEN
-      token: tcc-local-root-token
-      kv:
-        enabled: true
-        backend: secret
-        default-context: live-ms-java
-
     circuitbreaker:
       resilience4j:
         enabled: true
@@ -46,19 +48,17 @@ spring:
             readTimeout: 10000      # Time in ms to wait for data
             loggerLevel: basic      # Log level for Feign requests (basic, full, none)
 
-# AIS (Automatic Identification System) Polling Configuration
-ais:
-  polling:
-    interval: 30000  # Poll every 30 seconds
-
-# CGESP (Flooding) Configuration
-cgesp:
-  polling.interval: 60000  # Poll every 60 seconds (1 minute)
-  max-range-days: 30  # Maximum calendar days allowed in a synchronous range query
+# Optional legacy producers; disabled for the bus-only deployment.
+live:
+  sources:
+    ais:
+      enabled: false
+    cgesp:
+      enabled: false
 
 # OlhoVivo (SPTrans) Configuration
-# olhovivo.token injected at runtime from Vault (secret/live-ms-java)
 olhovivo:
+  token: ${OLHOVIVO_TOKEN}
   polling:
     interval: 60000  # Poll every 60 seconds
     line-terms:      # key=termosBusca for /Linha/Buscar, value=list of tl filters — buses through Mackenzie "Caio Prado C/B"
@@ -97,14 +97,6 @@ resilience4j:
         slowCallDurationThreshold: 2000ms
         waitDurationInOpenState: 30000ms
     instances:
-      ais-api:
-        baseConfig: default
-      cgesp-api:
-        baseConfig: default
-        # CGESP is an unreliable HTML scraper — open faster and stay open longer
-        waitDurationInOpenState: 60000ms      # 60s before probing again
-        slowCallDurationThreshold: 8000ms     # HTML scrape can be slow
-        minimumNumberOfCalls: 3               # Open circuit after fewer calls
       olhovivo-api:
         baseConfig: default
 
@@ -117,14 +109,9 @@ springdoc:
     url: /openapi.yaml      # Serve the hand-crafted spec from static/
     path: /swagger-ui.html  # UI available at /swagger-ui.html
 
-# Event Hub gRPC Configuration
-# live-ms-java publishes events to the event-hub via gRPC
+# Event Hub producers are disabled; data is persisted directly to PostgreSQL.
 event-hub:
-  grpc:
-    host: localhost
-    port: 50051
-    # area_id is assigned by virtual-areas-ms-java for routing
-    # live-ms-java publishes with LVC origin = LIVE
+  enabled: false
 
 # Logging Configuration
 logging:

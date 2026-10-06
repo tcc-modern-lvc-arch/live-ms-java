@@ -8,6 +8,7 @@ import io.github.raphonzius.lvc.live.domain.streaming.FloodingStreamingPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -27,6 +28,7 @@ import java.util.List;
  */
 @Slf4j
 @Service
+@ConditionalOnProperty(name = "live.sources.cgesp.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class CgespService {
 

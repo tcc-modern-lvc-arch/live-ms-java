@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -37,6 +38,7 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 @Component
+@ConditionalOnProperty(name = "live.sources.cgesp.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class CgespAdapter implements FloodingPort {
 

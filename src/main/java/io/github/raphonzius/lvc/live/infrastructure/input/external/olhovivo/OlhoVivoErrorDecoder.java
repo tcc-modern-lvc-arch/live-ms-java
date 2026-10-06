@@ -1,5 +1,7 @@
 package io.github.raphonzius.lvc.live.infrastructure.input.external.olhovivo;
 
+import feign.Request;
+import feign.RetryableException;
 import feign.Response;
 import feign.codec.ErrorDecoder;
 import io.github.raphonzius.lvc.live.infrastructure.exception.OlhoVivoApiException;
@@ -26,7 +28,14 @@ public class OlhoVivoErrorDecoder implements ErrorDecoder {
         return switch (response.status()) {
             case 401 -> {
                 authInterceptor.invalidateSession();
-                yield new OlhoVivoApiException("Session expired — re-authenticating", 401);
+                authInterceptor.authenticate();
+                yield new RetryableException(
+                        response.status(),
+                        "Session expired — re-authenticating",
+                        response.request().httpMethod(),
+                        (Long) null,
+                        response.request()
+                );
             }
             case 403 -> new OlhoVivoApiException("OlhoVivo API access forbidden", 403);
             case 404 -> new OlhoVivoApiException("OlhoVivo resource not found", 404);

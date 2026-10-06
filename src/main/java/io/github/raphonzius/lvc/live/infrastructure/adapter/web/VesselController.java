@@ -6,6 +6,7 @@ import io.github.raphonzius.lvc.live.domain.vessel.Vessel;
 import io.github.raphonzius.lvc.live.infrastructure.adapter.web.api.VesselApi;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,6 +18,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
+@ConditionalOnProperty(name = "live.sources.ais.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class VesselController implements VesselApi {
 

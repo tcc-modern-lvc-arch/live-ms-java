@@ -21,14 +21,14 @@ public class OlhoVivoPollingScheduler {
 
     /**
      * Runs the OlhoVivo polling cycle on a fixed delay.
-     * Fetches vehicle positions for all configured line terms and publishes results to {@code buses:stream}.
+     * Fetches vehicle positions for all configured line terms and persists them to PostgreSQL.
      * Interval controlled by {@code olhovivo.polling.interval} (default 60 000 ms).
      */
     @Scheduled(fixedDelayString = "${olhovivo.polling.interval:60000}")
     public void pollVehiclePositions() {
         try {
             log.debug("Starting OlhoVivo polling cycle");
-            olhoVivoService.fetchAndStreamVehiclePositions();
+            olhoVivoService.fetchAndPersistVehiclePositions();
             log.debug("OlhoVivo polling cycle completed");
         } catch (Exception e) {
             log.error("Error during OlhoVivo polling", e);

@@ -4,6 +4,7 @@ import io.github.raphonzius.lvc.live.domain.streaming.VesselStreamingPort;
 import io.github.raphonzius.lvc.live.domain.vessel.AisPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 /**
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
  */
 @Slf4j
 @Service
+@ConditionalOnProperty(name = "live.sources.ais.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class AisService {
 
@@ -57,4 +59,3 @@ public class AisService {
         }
     }
 }
-

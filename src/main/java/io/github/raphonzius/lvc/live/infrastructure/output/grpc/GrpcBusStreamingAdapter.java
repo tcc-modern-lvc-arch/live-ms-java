@@ -11,6 +11,7 @@ import io.github.raphonzius.lvc.proto.event.Location;
 import io.github.raphonzius.lvc.proto.event.LvcOrigin;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import io.github.raphonzius.lvc.live.infrastructure.config.properties.EventHubProperties;
@@ -22,6 +23,7 @@ import java.util.stream.Stream;
 
 @Slf4j
 @Component
+@ConditionalOnProperty(name = "event-hub.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class GrpcBusStreamingAdapter implements BusStreamingPort {
 

@@ -40,8 +40,8 @@ public class OlhoVivoController implements OlhoVivoApi {
     @Override
     public ResponseEntity<String> manualPoll() {
         log.info("REST: manual OlhoVivo poll triggered");
-        olhoVivoService.fetchAndStreamVehiclePositions();
-        return ResponseEntity.accepted().body("OlhoVivo polling initiated");
+        olhoVivoService.fetchAndPersistVehiclePositions();
+        return ResponseEntity.accepted().body("OlhoVivo polling completed and persisted");
     }
 
     /** {@inheritDoc} */

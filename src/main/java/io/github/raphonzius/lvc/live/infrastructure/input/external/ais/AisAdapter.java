@@ -5,6 +5,7 @@ import io.github.raphonzius.lvc.live.domain.vessel.Vessel;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -22,6 +23,7 @@ import java.util.List;
  */
 @Slf4j
 @Component
+@ConditionalOnProperty(name = "live.sources.ais.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class AisAdapter implements AisPort {
 

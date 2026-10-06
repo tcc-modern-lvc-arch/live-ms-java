@@ -1,8 +1,8 @@
 package io.github.raphonzius.lvc.live;
 
-import io.github.raphonzius.lvc.live.infrastructure.config.properties.AisProperties;
-import io.github.raphonzius.lvc.live.infrastructure.config.properties.CgespProperties;
 import io.github.raphonzius.lvc.live.infrastructure.config.properties.OlhoVivoProperties;
+import io.github.raphonzius.lvc.live.infrastructure.config.properties.OlhoVivoProperties;
+import io.github.raphonzius.lvc.live.infrastructure.input.external.olhovivo.OlhoVivoFeignClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -12,13 +12,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 /**
  * Entry point for the LVC Live Adapter microservice.
  *
- * <p>Polls AIS (vessel positions) and SPTrans OlhoVivo (bus positions),
- * then streams results to Event Hub via gRPC for downstream consumers.</p>
+ * <p>Polls SPTrans OlhoVivo bus positions and persists them to PostgreSQL.</p>
  */
 @SpringBootApplication
 @EnableFeignClients
 @EnableScheduling
-@EnableConfigurationProperties({AisProperties.class, CgespProperties.class, OlhoVivoProperties.class})
+@EnableConfigurationProperties(OlhoVivoProperties.class)
 public class LiveApplication {
 
     /** Starts the Spring Boot application. */
@@ -27,4 +26,3 @@ public class LiveApplication {
     }
 
 }
-

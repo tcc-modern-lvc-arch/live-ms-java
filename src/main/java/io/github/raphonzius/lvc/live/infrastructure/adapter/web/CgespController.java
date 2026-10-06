@@ -5,6 +5,7 @@ import io.github.raphonzius.lvc.live.domain.flooding.FloodingPoint;
 import io.github.raphonzius.lvc.live.infrastructure.adapter.web.api.CgespApi;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,6 +23,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
+@ConditionalOnProperty(name = "live.sources.cgesp.enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class CgespController implements CgespApi {
 

@@ -4,6 +4,7 @@ import io.github.raphonzius.lvc.live.infrastructure.config.properties.EventHubPr
 import io.github.raphonzius.lvc.proto.event.EventHubGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +21,7 @@ import java.util.concurrent.TimeUnit;
  * - Record accessors instead of getter methods
  */
 @Configuration
+@ConditionalOnProperty(name = "event-hub.enabled", havingValue = "true")
 @EnableConfigurationProperties(EventHubProperties.class)
 public class EventHubGrpcConfig {
 

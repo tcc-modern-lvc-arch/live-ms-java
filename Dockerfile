@@ -13,7 +13,7 @@ RUN --mount=type=cache,target=/root/.m2 \
     mvn -f live-ms-java/pom.xml dependency:go-offline -q 2>/dev/null || true
 
 # Full build
-COPY live-ms-java/live-ms-java/ ./live-ms-java/
+COPY live-ms-java/live-ms-java/src/ ./live-ms-java/src/
 RUN --mount=type=cache,target=/root/.m2 \
     mvn -f live-ms-java/pom.xml clean package -DskipTests -q
 
