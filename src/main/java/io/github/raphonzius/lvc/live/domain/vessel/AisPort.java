@@ -1,5 +1,7 @@
 package io.github.raphonzius.lvc.live.domain.vessel;
 
+import io.github.raphonzius.lvc.live.domain.FetchResult;
+
 import java.util.List;
 
 /**
@@ -16,9 +18,9 @@ public interface AisPort {
      * @param lonMax maximum longitude
      * @param latMax maximum latitude
      * @param zoom zoom level for the query
-     * @return list of vessels in the bounding box
+     * @return vessels in the bounding box (possibly empty), or {@code Unavailable} when the source failed
      */
-    List<Vessel.VesselData> fetchVessels(
+    FetchResult<List<Vessel.VesselData>> fetchVessels(
             double lonMin,
             double latMin,
             double lonMax,

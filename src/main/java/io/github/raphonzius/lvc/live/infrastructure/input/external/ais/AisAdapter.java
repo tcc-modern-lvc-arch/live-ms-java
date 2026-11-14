@@ -1,35 +1,38 @@
 package io.github.raphonzius.lvc.live.infrastructure.input.external.ais;
 
+import io.github.raphonzius.lvc.live.domain.FetchResult;
 import io.github.raphonzius.lvc.live.domain.vessel.AisPort;
 import io.github.raphonzius.lvc.live.domain.vessel.Vessel;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.raphonzius.lvc.live.infrastructure.input.external.UpstreamTelemetry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * AIS adapter implementing the AisPort interface.
- * Provides vessel data from the AIS API with resilience patterns.
  *
  * Location: infrastructure/input/external/ais/
  * This adapter IMPLEMENTS the domain port AisPort.
- * It adapts the AIS API to the domain's expectations.
  *
- * Translates the AIS Friends wire format ({@link AisVesselResponse}) into the domain record.
- * Circuit breaker {@code ais-api} is configured in application.yaml (resilience4j).
+ * <p>The HTTP call (with its circuit breaker and fallback) lives in {@link AisUpstream}.
+ * This class maps the AIS Friends wire format ({@link AisVesselResponse}) into domain records
+ * <em>item by item</em>, outside the breaker: a record without id/latitude/longitude is dropped
+ * (warning rate-limited, counter {@code lvc.upstream.invalid_records{api=ais}}) and never takes
+ * the rest of the snapshot down.</p>
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class AisAdapter implements AisPort {
 
-    private final AisFeignClient aisFeignClient;
+    private final AisUpstream upstream;
+    private final UpstreamTelemetry telemetry;
 
     @Override
-    @CircuitBreaker(name = "ais-api", fallbackMethod = "fetchVesselsFallback")
-    public List<Vessel.VesselData> fetchVessels(
+    public FetchResult<List<Vessel.VesselData>> fetchVessels(
             double lonMin,
             double latMin,
             double lonMax,
@@ -39,29 +42,30 @@ public class AisAdapter implements AisPort {
         log.info("Fetching vessels from AIS API - Box: ({},{})-({},{}), Zoom: {}",
                 lonMin, latMin, lonMax, latMax, zoom);
 
-        var response = aisFeignClient.getVessels(lonMin, latMin, lonMax, latMax, zoom);
-        if (response == null || response.isEmpty()) {
-            return List.of();
-        }
-
-        var vessels = response.stream().map(AisVesselResponse::toDomain).toList();
-        log.info("Successfully fetched {} vessels from AIS API", vessels.size());
-        return vessels;
+        return switch (upstream.fetch(lonMin, latMin, lonMax, latMax, zoom)) {
+            case FetchResult.Unavailable<List<AisVesselResponse>>(var reason) -> FetchResult.unavailable(reason);
+            case FetchResult.Fetched<List<AisVesselResponse>>(var raw) -> {
+                var vessels = mapAll(raw);
+                log.info("Successfully fetched {} vessels from AIS API ({} received)", vessels.size(), raw.size());
+                yield FetchResult.of(vessels);
+            }
+        };
     }
 
-    /**
-     * Fallback method when AIS API is unavailable.
-     * Used when circuit breaker is open.
-     */
-    public List<Vessel.VesselData> fetchVesselsFallback(
-            double lonMin,
-            double latMin,
-            double lonMax,
-            double latMax,
-            int zoom,
-            Exception exception
-    ) {
-        log.warn("AIS API circuit breaker activated - returning empty list", exception);
-        return List.of();
+    private List<Vessel.VesselData> mapAll(List<AisVesselResponse> raw) {
+        var vessels = new ArrayList<Vessel.VesselData>(raw.size());
+        for (var item : raw) {
+            var invalid = item == null ? "null element" : item.invalidReason();
+            if (invalid != null) {
+                telemetry.invalidRecord(AisUpstream.API, invalid);
+                continue;
+            }
+            try {
+                vessels.add(item.toDomain());
+            } catch (RuntimeException e) {
+                telemetry.invalidRecord(AisUpstream.API, "mapping failed: " + e);
+            }
+        }
+        return List.copyOf(vessels);
     }
 }

@@ -2,6 +2,7 @@ package io.github.raphonzius.lvc.live.infrastructure.output.grpc;
 
 import io.github.raphonzius.lvc.live.domain.bus.VehiclePosition;
 import io.github.raphonzius.lvc.live.domain.streaming.BusStreamingPort;
+import io.github.raphonzius.lvc.live.domain.streaming.PublishResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +18,7 @@ public class GrpcBusStreamingAdapter implements BusStreamingPort {
     private final EventPublisher publisher;
 
     @Override
-    public void publishPositions(VehiclePosition.PositionResponse positions) {
-        publisher.publish("bus", mapper.toEvents(positions));
+    public PublishResult publishPositions(VehiclePosition.PositionResponse positions) {
+        return publisher.publish("bus", mapper.toEvents(positions)).toResult();
     }
 }

@@ -7,6 +7,9 @@ import io.github.raphonzius.lvc.live.infrastructure.output.grpc.EventSender;
 import io.github.raphonzius.lvc.live.infrastructure.output.grpc.GrpcEventSender;
 import io.github.raphonzius.lvc.proto.event.EventHubGrpc;
 import io.grpc.ManagedChannel;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Metrics;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -55,9 +58,11 @@ public class EventHubGrpcConfig {
     }
 
     @Bean
-    public EventPublisher eventPublisher(EventSender eventSender, EventHubProperties properties) {
+    public EventPublisher eventPublisher(EventSender eventSender, EventHubProperties properties,
+                                         ObjectProvider<MeterRegistry> registry) {
         var grpc = properties.grpc();
-        return new EventPublisher(eventSender, grpc.maxConcurrency(), grpc.batchSize());
+        return new EventPublisher(eventSender, grpc.maxConcurrency(), grpc.batchSize(),
+                registry.getIfAvailable(() -> Metrics.globalRegistry));
     }
 
     @Bean

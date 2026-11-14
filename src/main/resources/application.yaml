@@ -62,6 +62,7 @@ cgesp:
 # olhovivo.token injected at runtime from Vault (secret/live-ms-java)
 olhovivo:
   api.url: https://api.olhovivo.sptrans.com.br/v2.1
+  login-cooldown: 60s  # wait after a failed login before trying again (no login per API call)
   polling:
     interval: 60000  # Poll every 60 seconds
     line-terms:      # key=termosBusca for /Linha/Buscar, value=list of tl filters — buses through Mackenzie "Caio Prado C/B"
@@ -154,7 +155,8 @@ spring.grpc.client:
               backoff-multiplier: 2
               retryable-status-codes: UNAVAILABLE
 
-# Actuator: only health is exposed (container HEALTHCHECK uses /actuator/health/liveness)
+# Actuator: only health is exposed (container HEALTHCHECK uses /actuator/health/readiness).
+# To read the lvc.* metrics over HTTP locally, add `metrics` to the include list.
 management:
   endpoints:
     web:

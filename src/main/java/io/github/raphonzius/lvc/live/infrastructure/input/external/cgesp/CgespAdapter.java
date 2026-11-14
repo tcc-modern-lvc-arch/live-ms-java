@@ -1,10 +1,11 @@
 package io.github.raphonzius.lvc.live.infrastructure.input.external.cgesp;
 
+import io.github.raphonzius.lvc.live.domain.FetchResult;
 import io.github.raphonzius.lvc.live.domain.TimeZones;
 import io.github.raphonzius.lvc.live.domain.flooding.FloodingPoint;
 import io.github.raphonzius.lvc.live.domain.flooding.FloodingPort;
 import io.github.raphonzius.lvc.live.infrastructure.exception.CgespApiException;
-import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import io.github.raphonzius.lvc.live.infrastructure.input.external.UpstreamTelemetry;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,25 +48,29 @@ public class CgespAdapter implements FloodingPort {
             "ativo-intransitavel", "ativo-transitavel", "inativo-intransitavel", "inativo-transitavel"
     );
 
+    private static final String API = "cgesp";
+
     private final CgespFeignClient feignClient;
+    private final UpstreamTelemetry telemetry;
 
     @Override
     @CircuitBreaker(name = "cgesp-api", fallbackMethod = "fetchFloodingsFallback")
-    public List<FloodingPoint.FloodData> fetchFloodings(LocalDate date) {
+    public FetchResult<List<FloodingPoint.FloodData>> fetchFloodings(LocalDate date) {
         String dateParam = date.format(DATE_FMT);
         log.debug("Fetching CGESP floodings for date={}", dateParam);
         String html = feignClient.fetchFloodingsHtml(dateParam, "Buscar");
-        return parseHtml(html, date);
+        var floodings = parseHtml(html, date);
+        telemetry.success(API);
+        return FetchResult.of(floodings);
     }
 
-    /** Circuit breaker fallback — returns empty list. */
-    public List<FloodingPoint.FloodData> fetchFloodingsFallback(LocalDate date, Exception ex) {
-        if (ex instanceof CallNotPermittedException) {
-            log.warn("CGESP circuit open — skipping date={}", date);
-        } else {
-            log.warn("CGESP retries exhausted for date={}: {}", date, ex.getMessage());
-        }
-        return FloodingPoint.FloodData.empty();
+    /**
+     * Circuit breaker fallback — reported as {@code Unavailable} (counted in
+     * {@code lvc.upstream.fallback}), never as an empty snapshot. A page whose structure changed
+     * (parse failure) also lands here on purpose: it is an upstream failure.
+     */
+    public FetchResult<List<FloodingPoint.FloodData>> fetchFloodingsFallback(LocalDate date, Exception ex) {
+        return FetchResult.unavailable(telemetry.fallback(API, ex));
     }
 
     // -------------------------------------------------------------------------

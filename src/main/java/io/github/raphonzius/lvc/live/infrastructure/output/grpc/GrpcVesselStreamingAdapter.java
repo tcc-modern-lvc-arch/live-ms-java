@@ -1,5 +1,6 @@
 package io.github.raphonzius.lvc.live.infrastructure.output.grpc;
 
+import io.github.raphonzius.lvc.live.domain.streaming.PublishResult;
 import io.github.raphonzius.lvc.live.domain.streaming.VesselStreamingPort;
 import io.github.raphonzius.lvc.live.domain.vessel.Vessel;
 import lombok.RequiredArgsConstructor;
@@ -20,12 +21,14 @@ public class GrpcVesselStreamingAdapter implements VesselStreamingPort {
     private final EventPublisher publisher;
 
     @Override
-    public void publishVessel(Vessel vessel) {
-        publisher.publish("vessel", List.of(mapper.toEvent(vessel)));
+    public PublishResult publishVessel(Vessel vessel) {
+        return publishVesselBatch(Stream.of(vessel));
     }
 
     @Override
-    public void publishVesselBatch(Stream<? extends Vessel> vesselStream) {
-        publisher.publish("vessel", vesselStream.map(mapper::toEvent).toList());
+    public PublishResult publishVesselBatch(Stream<? extends Vessel> vesselStream) {
+        List<Vessel> vessels = vesselStream.<Vessel>map(v -> v).toList();
+        return EventBatches.publish(publisher, "vessel",
+                EventBatches.mapEach("vessel", vessels, (Vessel v) -> mapper.toEvent(v)));
     }
 }

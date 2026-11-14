@@ -1,5 +1,7 @@
 package io.github.raphonzius.lvc.live.domain.bus;
 
+import io.github.raphonzius.lvc.live.domain.FetchResult;
+
 import java.util.List;
 
 /**
@@ -10,9 +12,9 @@ import java.util.List;
  */
 public interface OlhoVivoPort {
 
-    /** Resolves line codes (cl) from a search term via /Linha/Buscar */
-    List<BusLine.LineData> searchLines(String terms);
+    /** Resolves line codes (cl) from a search term via /Linha/Buscar; {@code Unavailable} on upstream failure. */
+    FetchResult<List<BusLine.LineData>> searchLines(String terms);
 
     /** Fetches vehicle positions for a single line via /Posicao/Linha */
-    VehiclePosition.PositionResponse positionsByLine(int lineCode);
+    FetchResult<VehiclePosition.PositionResponse> positionsByLine(int lineCode);
 }

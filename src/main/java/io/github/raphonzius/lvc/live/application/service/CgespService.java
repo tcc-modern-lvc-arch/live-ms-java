@@ -1,10 +1,12 @@
 package io.github.raphonzius.lvc.live.application.service;
 
 import io.github.raphonzius.lvc.live.application.exception.InvalidRangeException;
+import io.github.raphonzius.lvc.live.domain.FetchResult;
 import io.github.raphonzius.lvc.live.domain.TimeZones;
 import io.github.raphonzius.lvc.live.domain.flooding.FloodingPoint;
 import io.github.raphonzius.lvc.live.domain.flooding.FloodingPort;
 import io.github.raphonzius.lvc.live.domain.streaming.FloodingStreamingPort;
+import io.github.raphonzius.lvc.live.domain.streaming.PublishResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,22 +42,31 @@ public class CgespService {
 
     /**
      * Fetches today's flooding points (São Paulo timezone) and publishes them to Event Hub.
+     *
+     * @return delivered/failed counters; an unavailable CGESP source counts as one failed unit
      */
-    public void fetchAndStreamFloodings() {
+    public PublishResult fetchAndStreamFloodings() {
         LocalDate today = LocalDate.now(SAO_PAULO_TZ);
-        List<FloodingPoint.FloodData> floodings = floodingPort.fetchFloodings(today);
-        log.info("Fetched {} flooding point(s) for date={}", floodings.size(), today);
-        floodingStreamingPort.publishFloodings(today, floodings);
+        return switch (floodingPort.fetchFloodings(today)) {
+            case FetchResult.Unavailable<List<FloodingPoint.FloodData>>(var reason) -> {
+                log.warn("CGESP source unavailable ({}) for date={} — nothing to stream", reason, today);
+                yield PublishResult.failedOf(1);
+            }
+            case FetchResult.Fetched<List<FloodingPoint.FloodData>>(var floodings) -> {
+                log.info("Fetched {} flooding point(s) for date={}", floodings.size(), today);
+                yield floodingStreamingPort.publishFloodings(today, floodings);
+            }
+        };
     }
 
     /**
      * Fetches flooding points for a specific date without streaming.
      *
      * @param date the date to query
-     * @return list of flooding points
+     * @return list of flooding points (empty when the source is unavailable, as before)
      */
     public List<FloodingPoint.FloodData> fetchFloodingsByDate(LocalDate date) {
-        return floodingPort.fetchFloodings(date);
+        return floodingPort.fetchFloodings(date).orElse(List.of());
     }
 
     /**
@@ -75,7 +86,7 @@ public class CgespService {
                     "Range spans " + (days + 1) + " days — maximum is " + maxDays);
         }
         return from.datesUntil(to.plusDays(1))
-                .flatMap(date -> floodingPort.fetchFloodings(date).stream())
+                .flatMap(date -> floodingPort.fetchFloodings(date).orElse(List.of()).stream())
                 .toList();
     }
 }

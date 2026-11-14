@@ -3,6 +3,8 @@ package io.github.raphonzius.lvc.live.infrastructure.adapter.web;
 import io.github.raphonzius.lvc.live.application.service.CgespService;
 import io.github.raphonzius.lvc.live.domain.flooding.FloodingPoint;
 import io.github.raphonzius.lvc.live.infrastructure.adapter.web.api.CgespApi;
+import io.github.raphonzius.lvc.live.infrastructure.scheduler.CgespPollingScheduler;
+import io.github.raphonzius.lvc.live.infrastructure.scheduler.PollingJobRunner;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +31,8 @@ public class CgespController implements CgespApi {
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final CgespService cgespService;
+    private final PollingJobRunner pollingJobRunner;
+    private final CgespPollingScheduler cgespPollingJob;
 
     /** {@inheritDoc} */
     @Override
@@ -74,7 +78,7 @@ public class CgespController implements CgespApi {
     @Override
     public ResponseEntity<String> manualPoll() {
         log.info("REST: manual CGESP poll triggered");
-        cgespService.fetchAndStreamFloodings();
+        pollingJobRunner.run(cgespPollingJob).rethrowIfThrown();
         return ResponseEntity.accepted().body("CGESP flooding polling initiated");
     }
 

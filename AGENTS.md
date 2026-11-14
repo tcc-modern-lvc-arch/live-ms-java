@@ -104,7 +104,11 @@ Data is published to Event Hub via gRPC for downstream consumption.
 ### gRPC client and publishing
 
 - **Channel:** Boot-managed named channel `event-hub` (`spring.grpc.client.channel.event-hub.*`): static target, keepalive, and service-config retry (`UNAVAILABLE`, exponential backoff, 4 attempts). `EventHubGrpcConfig` enables retry explicitly and sets the shutdown grace period.
-- **`EventPublisher`:** Publishes each batch on virtual threads with a semaphore shared by all streams. Batches are cut into windows of `batch-size`. Failures never abort the batch; one summary line per batch is logged, at WARN with the first failure reason when the hub is down.
+- **`EventPublisher`:** Publishes each batch on virtual threads with a semaphore shared by all streams. Batches are cut into windows of `batch-size` (`Gatherers.windowFixed`). An event counts as delivered only on an `accepted` ack. One summary line per batch (INFO / WARN partial / ERROR nothing delivered) with the first failure reason. **Fail-fast:** if a whole window fails with `UNAVAILABLE`/`DEADLINE_EXCEEDED`, the remaining windows are skipped and counted as failed. Counter `lvc.events.published{stream,result}`.
+- **Outcomes:** streaming ports return a domain `PublishResult`; source ports return a sealed `FetchResult` (`Fetched | Unavailable`). `PollingJobRunner` records `lvc.polling.duration{job,outcome=success|partial|failed}`, so a hub or upstream outage is visible in metrics, not only in logs. Manual `POST .../poll` endpoints go through the same runner.
+- **Per-item isolation:** invalid upstream records (missing id/lat/lon) are dropped and counted (`lvc.upstream.invalid_records{api}`); mapping failures count as failed events instead of aborting the batch. Circuit breakers wrap only the HTTP call (`AisUpstream`); fallbacks are counted in `lvc.upstream.fallback{api,reason}`.
+- **Correlation id:** `CorrelationIdFilter` binds `X-Correlation-Id` (validated, or generated) as a ScopedValue for each request and echoes it in the response; scheduled cycles get one per cycle.
+- **REST contract:** `GET /api/vessels/bounding-box` (v1.0) keeps its original snake_case JSON through `VesselV1Response`, decoupled from the domain record.
 - **Per-call deadline:** `GrpcEventSender` sets `event-hub.grpc.deadline` on each `SendEvent` call.
 
 ## External APIs

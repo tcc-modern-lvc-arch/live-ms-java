@@ -13,10 +13,10 @@ import java.util.Objects;
  * Adding a new sealed subtype automatically forces it to supply its own response status.</p>
  *
  * <p>Sealed — permitted subtypes: {@link AisApiException}, {@link CgespApiException},
- * {@link OlhoVivoApiException}.</p>
+ * {@link OlhoVivoApiException}, {@link OlhoVivoAuthenticationException}.</p>
  */
 public sealed class InfrastructureException extends RuntimeException
-        permits AisApiException, CgespApiException, OlhoVivoApiException {
+        permits AisApiException, CgespApiException, OlhoVivoApiException, OlhoVivoAuthenticationException {
 
     private final HttpStatus httpStatus;
 

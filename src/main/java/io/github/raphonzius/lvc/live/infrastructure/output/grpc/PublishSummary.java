@@ -1,5 +1,7 @@
 package io.github.raphonzius.lvc.live.infrastructure.output.grpc;
 
+import io.github.raphonzius.lvc.live.domain.streaming.PublishResult;
+
 /**
  * Outcome counters for one published batch.
  *
@@ -18,6 +20,11 @@ public record PublishSummary(int succeeded, int failed) {
 
     public int total() {
         return succeeded + failed;
+    }
+
+    /** Converts to the domain-level result returned through the streaming ports. */
+    public PublishResult toResult() {
+        return new PublishResult(succeeded, failed);
     }
 
     public PublishSummary plus(PublishSummary other) {

@@ -1,6 +1,7 @@
 package io.github.raphonzius.lvc.live.infrastructure.scheduler;
 
 import io.github.raphonzius.lvc.live.application.service.AisService;
+import io.github.raphonzius.lvc.live.domain.streaming.PublishResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -30,7 +31,7 @@ public class AisPollingScheduler implements PollingJob {
     }
 
     @Override
-    public void poll() {
-        aisService.fetchAndStreamVessels();
+    public PublishResult poll() {
+        return aisService.fetchAndStreamVessels();
     }
 }

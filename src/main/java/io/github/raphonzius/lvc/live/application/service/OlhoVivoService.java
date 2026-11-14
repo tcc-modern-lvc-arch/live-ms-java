@@ -1,14 +1,17 @@
 package io.github.raphonzius.lvc.live.application.service;
 
+import io.github.raphonzius.lvc.live.domain.FetchResult;
 import io.github.raphonzius.lvc.live.domain.bus.BusLine;
 import io.github.raphonzius.lvc.live.domain.bus.OlhoVivoPort;
 import io.github.raphonzius.lvc.live.domain.bus.VehiclePosition;
 import io.github.raphonzius.lvc.live.domain.streaming.BusStreamingPort;
+import io.github.raphonzius.lvc.live.domain.streaming.PublishResult;
 import io.github.raphonzius.lvc.live.infrastructure.config.properties.OlhoVivoProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -32,33 +35,46 @@ public class OlhoVivoService {
     /**
      * Executes the targeted polling workflow:
      * searches configured line terms → filters by {@code tl} → fetches positions per line → publishes to Event Hub.
+     *
+     * @return delivered/failed counters; every unavailable upstream call (search or positions) counts as
+     *         one failed unit, so a cycle where OlhoVivo is down is reported as failed, not as empty
      */
-    public void fetchAndStreamVehiclePositions() {
+    public PublishResult fetchAndStreamVehiclePositions() {
         Map<String, List<Integer>> lineTerms = properties.polling().lineTerms();
 
         if (lineTerms.isEmpty()) {
             log.warn("No olhovivo.polling.line-terms configured — skipping poll");
-            return;
+            return PublishResult.EMPTY;
         }
 
-        lineTerms.entrySet().stream()
-                .flatMap(entry -> {
-                    List<BusLine.LineData> lines = olhoVivoPort.searchLines(entry.getKey());
+        var unavailable = 0;
+        var lineCodes = new LinkedHashSet<Integer>();
+        for (var entry : lineTerms.entrySet()) {
+            switch (olhoVivoPort.searchLines(entry.getKey())) {
+                case FetchResult.Unavailable<List<BusLine.LineData>> _ -> unavailable++;
+                case FetchResult.Fetched<List<BusLine.LineData>>(var lines) -> {
                     log.debug("Term '{}' resolved {} line(s) before tl filter", entry.getKey(), lines.size());
-                    return lines.stream()
-                            .filter(line -> entry.getValue().contains(line.tl()));
-                })
-                .mapToInt(BusLine.LineData::cl)
-                .distinct()
-                .mapToObj(cl -> {
-                    log.debug("Fetching positions for lineCode={}", cl);
-                    return olhoVivoPort.positionsByLine(cl);
-                })
-                .filter(pos -> pos != null && pos.vs() != null && !pos.vs().isEmpty())
-                .forEach(pos -> {
-                    log.info("Streaming {} vehicle(s) hr={}", pos.vs().size(), pos.hr());
-                    busStreamingPort.publishPositions(pos);
-                });
+                    lines.stream()
+                            .filter(line -> entry.getValue().contains(line.tl()))
+                            .forEach(line -> lineCodes.add(line.cl()));
+                }
+            }
+        }
+
+        var result = PublishResult.EMPTY;
+        for (var cl : lineCodes) {
+            log.debug("Fetching positions for lineCode={}", cl);
+            switch (olhoVivoPort.positionsByLine(cl)) {
+                case FetchResult.Unavailable<VehiclePosition.PositionResponse> _ -> unavailable++;
+                case FetchResult.Fetched<VehiclePosition.PositionResponse>(var pos) -> {
+                    if (pos != null && pos.vs() != null && !pos.vs().isEmpty()) {
+                        log.info("Streaming {} vehicle(s) hr={}", pos.vs().size(), pos.hr());
+                        result = result.plus(busStreamingPort.publishPositions(pos));
+                    }
+                }
+            }
+        }
+        return result.plus(PublishResult.failedOf(unavailable));
     }
 
     /**
@@ -66,7 +82,7 @@ public class OlhoVivoService {
      * @param terms search term (e.g. "178L")
      */
     public List<BusLine.LineData> searchLines(String terms) {
-        return olhoVivoPort.searchLines(terms);
+        return olhoVivoPort.searchLines(terms).orElse(List.of());
     }
 
     /**
@@ -74,6 +90,6 @@ public class OlhoVivoService {
      * @param lineCode line code ({@code cl}) from OlhoVivo
      */
     public VehiclePosition.PositionResponse positionsByLine(int lineCode) {
-        return olhoVivoPort.positionsByLine(lineCode);
+        return olhoVivoPort.positionsByLine(lineCode).orElse(VehiclePosition.PositionResponse.empty());
     }
 }

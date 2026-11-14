@@ -4,6 +4,8 @@ import io.github.raphonzius.lvc.live.application.service.OlhoVivoService;
 import io.github.raphonzius.lvc.live.domain.bus.BusLine;
 import io.github.raphonzius.lvc.live.domain.bus.VehiclePosition;
 import io.github.raphonzius.lvc.live.infrastructure.adapter.web.api.OlhoVivoApi;
+import io.github.raphonzius.lvc.live.infrastructure.scheduler.OlhoVivoPollingScheduler;
+import io.github.raphonzius.lvc.live.infrastructure.scheduler.PollingJobRunner;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,8 @@ import java.util.List;
 public class OlhoVivoController implements OlhoVivoApi {
 
     private final OlhoVivoService olhoVivoService;
+    private final PollingJobRunner pollingJobRunner;
+    private final OlhoVivoPollingScheduler olhoVivoPollingJob;
 
     /** {@inheritDoc} */
     @Override
@@ -40,7 +44,7 @@ public class OlhoVivoController implements OlhoVivoApi {
     @Override
     public ResponseEntity<String> manualPoll() {
         log.info("REST: manual OlhoVivo poll triggered");
-        olhoVivoService.fetchAndStreamVehiclePositions();
+        pollingJobRunner.run(olhoVivoPollingJob).rethrowIfThrown();
         return ResponseEntity.accepted().body("OlhoVivo polling initiated");
     }
 

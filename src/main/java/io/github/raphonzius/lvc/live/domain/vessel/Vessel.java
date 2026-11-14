@@ -27,7 +27,8 @@ public sealed interface Vessel permits Vessel.VesselData {
      * @param longitude  longitude in decimal degrees
      * @param timestamp  position timestamp as reported by the provider ({@code 0} when unknown)
      * @param speedKnots speed over ground in knots, if reported
-     * @param headingDeg true heading in degrees, if reported
+     * @param headingDeg true heading in degrees (0..359), {@code null} when absent or not available
+     * @param details    optional descriptive attributes (REST v1 only); may be {@code null}
      */
     record VesselData(
             long id,
@@ -38,7 +39,14 @@ public sealed interface Vessel permits Vessel.VesselData {
             double longitude,
             long timestamp,
             Double speedKnots,
-            Integer headingDeg
+            Integer headingDeg,
+            VesselDetails details
     ) implements Vessel {
+
+        /** Position report without descriptive details. */
+        public VesselData(long id, Long mmsi, String name, String shipType, double latitude,
+                          double longitude, long timestamp, Double speedKnots, Integer headingDeg) {
+            this(id, mmsi, name, shipType, latitude, longitude, timestamp, speedKnots, headingDeg, null);
+        }
     }
 }

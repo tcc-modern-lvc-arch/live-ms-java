@@ -78,7 +78,7 @@ class EventPublisherTest {
     }
 
     @Test
-    void hubOutageLogsOneSummaryWarningWithReasonInsteadOfOnePerEvent() {
+    void hubOutageLogsOneSummaryErrorWithReasonInsteadOfOnePerEvent() {
         var logger = (Logger) LoggerFactory.getLogger(EventPublisher.class);
         var appender = new ListAppender<ILoggingEvent>();
         appender.start();
@@ -98,6 +98,7 @@ class EventPublisherTest {
                 .filter(e -> e.getLevel().isGreaterOrEqual(Level.WARN))
                 .toList();
         assertThat(warnings).singleElement().satisfies(e -> {
+            assertThat(e.getLevel()).as("nothing delivered => ERROR").isEqualTo(Level.ERROR);
             assertThat(e.getFormattedMessage()).contains("0/20", "20 failed", "UNAVAILABLE: hub down");
             assertThat(e.getFormattedMessage()).doesNotContain("ConnectException");
         });
@@ -149,5 +150,134 @@ class EventPublisherTest {
 
         assertThat(seenScoped).containsExactly("cid-123");
         assertThat(seenMdc).containsExactly("cid-123");
+    }
+
+    // ── ACK contract ────────────────────────────────────────────────────────
+
+    @Test
+    void onlyAcceptedStatusCountsAsSuccess() {
+        var publisher = new EventPublisher(r -> switch (r.getEntityId()) {
+            case "e0" -> EventAck.newBuilder().setStatus("ACCEPTED").build();
+            case "e1" -> EventAck.newBuilder().setStatus("queued").build();
+            default -> EventAck.getDefaultInstance();
+        }, 4, 10);
+
+        assertThat(publisher.publish("vessel", requests(3))).isEqualTo(new PublishSummary(1, 2));
+    }
+
+    // ── Task ending with an Error (Future.resultNow would throw ISE) ────────
+
+    @Test
+    void errorInsideTaskIsCountedAsFailureInsteadOfBlowingUpTheBatch() {
+        var publisher = new EventPublisher(r -> {
+            if (r.getEntityId().equals("e1")) {
+                throw new AssertionError("boom");
+            }
+            return ACCEPTED;
+        }, 4, 10);
+
+        assertThat(publisher.publish("vessel", requests(3))).isEqualTo(new PublishSummary(2, 1));
+    }
+
+    // ── Fail-fast when the hub is down ──────────────────────────────────────
+
+    @Test
+    void hubDownAbortsRemainingWindowsAndCountsThemAsSkipped() {
+        var calls = new AtomicInteger();
+        var logger = (Logger) LoggerFactory.getLogger(EventPublisher.class);
+        var appender = new ListAppender<ILoggingEvent>();
+        appender.start();
+        logger.addAppender(appender);
+        PublishSummary summary;
+        try {
+            var publisher = new EventPublisher(_ -> {
+                calls.incrementAndGet();
+                throw Status.UNAVAILABLE.withDescription("hub down").asRuntimeException();
+            }, 4, 2);
+
+            summary = publisher.publish("vessel", requests(6));
+        } finally {
+            logger.detachAppender(appender);
+        }
+
+        assertThat(calls).as("only the first window reaches the hub").hasValue(2);
+        assertThat(summary).isEqualTo(new PublishSummary(0, 6));
+        assertThat(appender.list.stream().filter(e -> e.getLevel().isGreaterOrEqual(Level.WARN)))
+                .singleElement()
+                .satisfies(e -> assertThat(e.getFormattedMessage())
+                        .contains("skipped: event-hub unavailable", "4"));
+    }
+
+    @Test
+    void deadlineExceededAlsoCountsAsHubDown() {
+        var calls = new AtomicInteger();
+        var publisher = new EventPublisher(_ -> {
+            calls.incrementAndGet();
+            throw Status.DEADLINE_EXCEEDED.asRuntimeException();
+        }, 4, 3);
+
+        assertThat(publisher.publish("vessel", requests(9))).isEqualTo(new PublishSummary(0, 9));
+        assertThat(calls).hasValue(3);
+    }
+
+    @Test
+    void windowWithAtLeastOneSuccessDoesNotAbort() {
+        var calls = new AtomicInteger();
+        var publisher = new EventPublisher(r -> {
+            calls.incrementAndGet();
+            if (r.getEntityId().equals("e0") || r.getEntityId().equals("e2")) {
+                return ACCEPTED;
+            }
+            throw Status.UNAVAILABLE.asRuntimeException();
+        }, 4, 2);
+
+        assertThat(publisher.publish("vessel", requests(6))).isEqualTo(new PublishSummary(2, 4));
+        assertThat(calls).hasValue(6);
+    }
+
+    @Test
+    void rejectionsAreNotHubOutageAndNeverAbort() {
+        var calls = new AtomicInteger();
+        var publisher = new EventPublisher(_ -> {
+            calls.incrementAndGet();
+            return EventAck.newBuilder().setStatus("rejected").setErrorMessage("bad area").build();
+        }, 4, 2);
+
+        assertThat(publisher.publish("vessel", requests(6))).isEqualTo(new PublishSummary(0, 6));
+        assertThat(calls).hasValue(6);
+    }
+
+    @Test
+    void partialFailureLogsWarnNotError() {
+        var logger = (Logger) LoggerFactory.getLogger(EventPublisher.class);
+        var appender = new ListAppender<ILoggingEvent>();
+        appender.start();
+        logger.addAppender(appender);
+        try {
+            new EventPublisher(r -> r.getEntityId().equals("e0")
+                    ? EventAck.newBuilder().setStatus("rejected").build() : ACCEPTED, 4, 10)
+                    .publish("bus", requests(3));
+        } finally {
+            logger.detachAppender(appender);
+        }
+
+        assertThat(appender.list.stream().filter(e -> e.getLevel().isGreaterOrEqual(Level.WARN)))
+                .singleElement().satisfies(e -> assertThat(e.getLevel()).isEqualTo(Level.WARN));
+    }
+
+    // ── Metrics ─────────────────────────────────────────────────────────────
+
+    @Test
+    void countsAcceptedAndFailedEventsPerStream() {
+        var registry = new io.micrometer.core.instrument.simple.SimpleMeterRegistry();
+        var publisher = new EventPublisher(r -> r.getEntityId().equals("e1")
+                ? EventAck.newBuilder().setStatus("rejected").build() : ACCEPTED, 4, 10, registry);
+
+        publisher.publish("vessel", requests(3));
+
+        assertThat(registry.get("lvc.events.published").tags("stream", "vessel", "result", "accepted")
+                .counter().count()).isEqualTo(2.0);
+        assertThat(registry.get("lvc.events.published").tags("stream", "vessel", "result", "failed")
+                .counter().count()).isEqualTo(1.0);
     }
 }

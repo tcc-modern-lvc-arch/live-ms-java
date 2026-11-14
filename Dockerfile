@@ -36,29 +36,38 @@ COPY --from=build /workspace/extracted/spring-boot-loader/    ./
 COPY --from=build /workspace/extracted/snapshot-dependencies/ ./
 COPY --from=build /workspace/extracted/application/           ./
 
+# JVM flags shared by the AOT training run, its validation and the container ENTRYPOINT.
+# Declared once, before training, so all three always use exactly the same GC / heap /
+# compact-headers settings (the AOT cache is only valid for matching flags).
+ENV JAVA_TOOL_OPTIONS="-XX:+UseCompactObjectHeaders -XX:+UseG1GC -XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError --enable-native-access=ALL-UNNAMED"
+
 # JEP 483/514/515 AOT cache, trained with the same JDK as the runtime.
-# Training boots the Spring context and exits right after refresh
-# (spring.context.exit=onRefresh) with everything external switched off:
+# Training boots the Spring context and exits as soon as it is refreshed
+# (spring.context.exit=onRefresh) — that exit is also what keeps the @Scheduled pollers from
+# running in the build — with everything external switched off:
 #   - Vault disabled (the "optional:vault://" import is skipped)
 #   - gRPC channel to event-hub is lazy (never connects during training)
-#   - polling schedulers pushed far out and the server port set to 0
-# The JVM flags used here must match the ENTRYPOINT (GC / compact headers).
+#   - server port 0, so nothing binds 8080
+# The jar must be given with the SAME absolute path at training and at runtime: the cache
+# records the classpath and rejects a mismatch.
 RUN java -XX:AOTCacheOutput=/app/app.aot \
-         -XX:+UseCompactObjectHeaders -XX:+UseG1GC --enable-native-access=ALL-UNNAMED \
          -Dspring.context.exit=onRefresh \
          -Dspring.cloud.vault.enabled=false \
          -Dserver.port=0 \
-         -Dais.polling.interval=86400000 \
-         -Dcgesp.polling.interval=86400000 \
-         -Dolhovivo.polling.interval=86400000 \
-         -jar live-ms-java.jar \
+         -jar /app/live-ms-java.jar \
     && test -s /app/app.aot
+
+# Fail the build if the JVM would not accept the cache at runtime. -XX:AOTMode=on (unlike the
+# default "auto") makes a rejected cache an error instead of a silent fallback to a slow start.
+RUN java -XX:AOTMode=on -XX:AOTCache=/app/app.aot \
+         -Dspring.context.exit=onRefresh \
+         -Dspring.cloud.vault.enabled=false \
+         -Dserver.port=0 \
+         -jar /app/live-ms-java.jar
 
 # Non-root user with fixed UID; app files stay root-owned (read-only for it)
 RUN adduser -D -H -u 10001 -s /sbin/nologin app
 USER 10001:10001
-
-ENV JAVA_TOOL_OPTIONS="-XX:+UseCompactObjectHeaders -XX:+UseG1GC -XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError --enable-native-access=ALL-UNNAMED"
 
 EXPOSE 8080
 

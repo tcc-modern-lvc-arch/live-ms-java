@@ -1,8 +1,10 @@
 package io.github.raphonzius.lvc.live.application.service;
 
+import io.github.raphonzius.lvc.live.domain.FetchResult;
 import io.github.raphonzius.lvc.live.domain.flooding.FloodingPoint;
 import io.github.raphonzius.lvc.live.domain.flooding.FloodingPort;
 import io.github.raphonzius.lvc.live.domain.streaming.FloodingStreamingPort;
+import io.github.raphonzius.lvc.live.domain.streaming.PublishResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,7 +52,7 @@ class CgespServiceTest {
     @Test
     void fetchAndStreamFloodings_usesTodayInSpTimezone() {
         LocalDate before = LocalDate.now(SAO_PAULO_TZ);
-        when(floodingPort.fetchFloodings(any())).thenReturn(List.of());
+        when(floodingPort.fetchFloodings(any())).thenReturn(FetchResult.of(List.of()));
 
         service.fetchAndStreamFloodings();
 
@@ -71,7 +73,7 @@ class CgespServiceTest {
                         "AV JOSE ALENCAR GOMES DA SILVA", "CENTRO/BAIRRO", "AV SAPOPEMBA"
                 )
         );
-        when(floodingPort.fetchFloodings(any())).thenReturn(floodings);
+        when(floodingPort.fetchFloodings(any())).thenReturn(FetchResult.of(floodings));
 
         service.fetchAndStreamFloodings();
 
@@ -80,7 +82,7 @@ class CgespServiceTest {
 
     @Test
     void fetchAndStreamFloodings_portReturnsEmpty_stillPublishes() {
-        when(floodingPort.fetchFloodings(any())).thenReturn(List.of());
+        when(floodingPort.fetchFloodings(any())).thenReturn(FetchResult.of(List.of()));
 
         service.fetchAndStreamFloodings();
 
@@ -95,12 +97,36 @@ class CgespServiceTest {
     void fetchFloodingsByDate_delegatesToPort() {
         LocalDate date = LocalDate.of(2026, 4, 1);
         List<FloodingPoint.FloodData> expected = List.of();
-        when(floodingPort.fetchFloodings(date)).thenReturn(expected);
+        when(floodingPort.fetchFloodings(date)).thenReturn(FetchResult.of(expected));
 
         List<FloodingPoint.FloodData> result = service.fetchFloodingsByDate(date);
 
         assertThat(result).isSameAs(expected);
         verify(floodingPort).fetchFloodings(date);
         verifyNoInteractions(floodingStreamingPort);
+    }
+
+    @Test
+    void fetchAndStreamFloodings_returnsThePublishResultOfThePort() {
+        when(floodingPort.fetchFloodings(any())).thenReturn(FetchResult.of(List.of()));
+        when(floodingStreamingPort.publishFloodings(any(LocalDate.class), any())).thenReturn(new PublishResult(3, 1));
+
+        assertThat(service.fetchAndStreamFloodings()).isEqualTo(new PublishResult(3, 1));
+    }
+
+    @Test
+    void fetchAndStreamFloodings_unavailableSourceIsAFailureAndPublishesNothing() {
+        when(floodingPort.fetchFloodings(any())).thenReturn(FetchResult.unavailable("circuit_open"));
+
+        assertThat(service.fetchAndStreamFloodings().totalFailure()).isTrue();
+        verifyNoInteractions(floodingStreamingPort);
+    }
+
+    @Test
+    void fetchFloodingsByDate_unavailableSourceStillAnswersAnEmptyList() {
+        var date = LocalDate.of(2026, 4, 1);
+        when(floodingPort.fetchFloodings(date)).thenReturn(FetchResult.unavailable("down"));
+
+        assertThat(service.fetchFloodingsByDate(date)).isEmpty();
     }
 }
