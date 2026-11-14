@@ -151,6 +151,18 @@ spring.grpc.client:
               backoff-multiplier: 2
               retryable-status-codes: UNAVAILABLE
 
+# Actuator: only health is exposed (container HEALTHCHECK uses /actuator/health/liveness)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
 # Logging Configuration
 logging:
   pattern:
