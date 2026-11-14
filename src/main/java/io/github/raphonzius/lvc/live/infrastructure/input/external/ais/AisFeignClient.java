@@ -15,7 +15,7 @@ import java.util.List;
  */
 @FeignClient(
         name = "ais-api",
-        url = "https://www.aisfriends.com",
+        url = "${ais.api.url:https://www.aisfriends.com}",
         configuration = AisFeignConfiguration.class
 )
 public interface AisFeignClient {

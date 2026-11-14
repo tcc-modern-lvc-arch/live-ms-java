@@ -48,17 +48,20 @@ spring:
 
 # AIS (Automatic Identification System) Polling Configuration
 ais:
+  api.url: https://www.aisfriends.com   # override (e.g. AIS_API_URL) for tests/benchmarks
   polling:
     interval: 30000  # Poll every 30 seconds
 
 # CGESP (Flooding) Configuration
 cgesp:
+  api.url: https://www.cgesp.org
   polling.interval: 60000  # Poll every 60 seconds (1 minute)
   max-range-days: 30  # Maximum calendar days allowed in a synchronous range query
 
 # OlhoVivo (SPTrans) Configuration
 # olhovivo.token injected at runtime from Vault (secret/live-ms-java)
 olhovivo:
+  api.url: https://api.olhovivo.sptrans.com.br/v2.1
   polling:
     interval: 60000  # Poll every 60 seconds
     line-terms:      # key=termosBusca for /Linha/Buscar, value=list of tl filters — buses through Mackenzie "Caio Prado C/B"

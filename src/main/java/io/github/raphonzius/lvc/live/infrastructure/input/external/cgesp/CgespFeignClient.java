@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  */
 @FeignClient(
         name = "cgesp-api",
-        url = "https://www.cgesp.org",
+        url = "${cgesp.api.url:https://www.cgesp.org}",
         configuration = CgespFeignConfiguration.class
 )
 public interface CgespFeignClient {

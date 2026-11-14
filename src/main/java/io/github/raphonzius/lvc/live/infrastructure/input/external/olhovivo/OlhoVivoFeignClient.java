@@ -19,7 +19,7 @@ import java.util.List;
  */
 @FeignClient(
         name = "olhovivo-api",
-        url = "https://api.olhovivo.sptrans.com.br/v2.1",
+        url = "${olhovivo.api.url:https://api.olhovivo.sptrans.com.br/v2.1}",
         configuration = OlhoVivoFeignConfiguration.class
 )
 public interface OlhoVivoFeignClient {
