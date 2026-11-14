@@ -80,7 +80,18 @@
             <version>${proto-shared.version}</version>
         </dependency>
 
-        <!-- gRPC client -->
+        <!-- gRPC client: Spring Boot 4.1 managed channels (GrpcChannelFactory, spring.grpc.client.channel.*).
+             grpc-netty (unshaded) is excluded so the shaded transport below is the only one on the classpath. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-grpc-client</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.grpc</groupId>
+                    <artifactId>grpc-netty</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-netty-shaded</artifactId>

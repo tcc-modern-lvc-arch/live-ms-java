@@ -118,16 +118,44 @@ springdoc:
     path: /swagger-ui.html  # UI available at /swagger-ui.html
 
 # Event Hub gRPC Configuration
-# live-ms-java publishes events to the event-hub via gRPC
+# live-ms-java publishes events to the event-hub via gRPC (LVC origin = LIVE)
 event-hub:
   grpc:
+    # host/port only feed spring.grpc.client.channel.event-hub.target below
+    # (kept so EVENT_HUB_GRPC_HOST / EVENT_HUB_GRPC_PORT keep working)
     host: localhost
     port: 50051
-    # area_id is assigned by virtual-areas-ms-java for routing
-    # live-ms-java publishes with LVC origin = LIVE
+    area-id: default-area        # routing key; areas are managed by virtual-areas-ms-java
+    deadline: 2s                 # per-call deadline for SendEvent (retries happen within it)
+    max-concurrency: 32          # max in-flight SendEvent RPCs (virtual threads + semaphore)
+    batch-size: 500              # window size when slicing large batches (Gatherers.windowFixed)
+    shutdown-grace-period: 5s    # wait for in-flight RPCs when the channel shuts down
+
+# Spring Boot gRPC client — named channel used by EventHubGrpcConfig
+spring.grpc.client:
+  channel:
+    event-hub:
+      target: "static://${event-hub.grpc.host}:${event-hub.grpc.port}"
+      keepalive:
+        time: 30s
+        timeout: 10s
+        without-calls: false
+      service-config:
+        method:
+          - name:
+              - service: event.EventHub   # all methods of the EventHub service
+            retry:
+              max-attempts: 4
+              initial-backoff: 100ms
+              max-backoff: 1s
+              backoff-multiplier: 2
+              retryable-status-codes: UNAVAILABLE
 
 # Logging Configuration
 logging:
+  pattern:
+    # correlation id of the current polling cycle (ScopedValue mirrored into MDC)
+    correlation: "[%X{correlationId:-}] "
   level:
     root: INFO
     io.github.raphonzius.lvc: DEBUG

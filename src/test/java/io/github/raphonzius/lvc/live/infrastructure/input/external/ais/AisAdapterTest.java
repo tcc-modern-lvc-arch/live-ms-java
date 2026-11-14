@@ -43,14 +43,21 @@ class AisAdapterTest {
     // -------------------------------------------------------------------------
 
     @Test
-    void fetchVessels_delegatesToFeignClient() {
-        List<Vessel.VesselData> expected = List.of(vesselData(1L));
-        when(feignClient.getVessels(LON_MIN, LAT_MIN, LON_MAX, LAT_MAX, ZOOM)).thenReturn(expected);
+    void fetchVessels_delegatesToFeignClientAndMapsToDomain() {
+        when(feignClient.getVessels(LON_MIN, LAT_MIN, LON_MAX, LAT_MAX, ZOOM)).thenReturn(List.of(response(1L)));
 
         List<Vessel.VesselData> result = adapter.fetchVessels(LON_MIN, LAT_MIN, LON_MAX, LAT_MAX, ZOOM);
 
-        assertThat(result).isSameAs(expected);
+        assertThat(result).containsExactly(new Vessel.VesselData(
+                1L, 123456790L, "VESSEL_1", "Type_71", -23.5, -46.5, 1_700_000_000L, 5.5, 90));
         verify(feignClient).getVessels(LON_MIN, LAT_MIN, LON_MAX, LAT_MAX, ZOOM);
+    }
+
+    @Test
+    void fetchVessels_returnsEmptyListWhenFeignReturnsNull() {
+        when(feignClient.getVessels(LON_MIN, LAT_MIN, LON_MAX, LAT_MAX, ZOOM)).thenReturn(null);
+
+        assertThat(adapter.fetchVessels(LON_MIN, LAT_MIN, LON_MAX, LAT_MAX, ZOOM)).isEmpty();
     }
 
     @Test
@@ -64,8 +71,8 @@ class AisAdapterTest {
 
     @Test
     void fetchVessels_returnsMultipleVessels() {
-        List<Vessel.VesselData> vessels = List.of(vesselData(1L), vesselData(2L), vesselData(3L));
-        when(feignClient.getVessels(LON_MIN, LAT_MIN, LON_MAX, LAT_MAX, ZOOM)).thenReturn(vessels);
+        when(feignClient.getVessels(LON_MIN, LAT_MIN, LON_MAX, LAT_MAX, ZOOM))
+                .thenReturn(List.of(response(1L), response(2L), response(3L)));
 
         List<Vessel.VesselData> result = adapter.fetchVessels(LON_MIN, LAT_MIN, LON_MAX, LAT_MAX, ZOOM);
 
@@ -114,15 +121,8 @@ class AisAdapterTest {
     // Helpers
     // -------------------------------------------------------------------------
 
-    private static Vessel.VesselData vesselData(long id) {
-        return new Vessel.VesselData(
-                id, id, "cargo", 0L, 123456789L,
-                "VESSEL_" + id, "VESSEL_AIS_" + id,
-                70L, 71L, System.currentTimeMillis(),
-                100L, 20L, 50L, 50L, 10L, 10L,
-                0L, 90.0, 5.5, 6.0,
-                0L, "BR",
-                -23.5, -46.5, 0L, 0L
-        );
+    private static AisVesselResponse response(long id) {
+        return new AisVesselResponse(id, 123456789L + id, "VESSEL_" + id, "VESSEL_AIS_" + id,
+                71L, 1_700_000_000L, 5.5, 90L, -23.5, -46.5);
     }
 }

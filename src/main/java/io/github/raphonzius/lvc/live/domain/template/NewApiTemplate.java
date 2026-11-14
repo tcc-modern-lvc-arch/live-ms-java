@@ -7,34 +7,19 @@ package io.github.raphonzius.lvc.live.domain.template;
  */
 
 /*
- * STEP 1: Create Domain Model (domain/weather/WeatherData.java)
+ * STEP 1: Create Domain Model (domain/weather/Weather.java)
  *
- * Use sealed classes and records for type safety and immutability.
- * Keep it independent - no external dependencies.
+ * Sealed interface + record, Java names, only the fields the service uses.
+ * The external wire format (snake_case JSON, extra fields) does NOT belong here — see STEP 3b.
  */
 
-// public sealed class Weather permits WeatherRecord {
-//     public abstract String location();
-//     public abstract double temperature();
-//     public abstract long timestamp();
+// public sealed interface Weather permits Weather.WeatherData {
+//     String location();
+//     double temperature();
+//     long timestamp();
 //
-//     public record WeatherRecord(
-//         String location,
-//         double temperature,
-//         String condition,
-//         long timestamp,
-//         double humidity,
-//         double windSpeed
-//     ) implements Weather {
-//         @Override
-//         public String location() { return location; }
-//
-//         @Override
-//         public double temperature() { return temperature; }
-//
-//         @Override
-//         public long timestamp() { return timestamp; }
-//     }
+//     record WeatherData(String location, double temperature, Double humidity, long timestamp)
+//             implements Weather {}
 // }
 
 /*
@@ -45,32 +30,45 @@ package io.github.raphonzius.lvc.live.domain.template;
  */
 
 // public interface WeatherPort {
-//     Weather.WeatherRecord fetchWeather(String city);
-//     List<Weather.WeatherRecord> fetchMultipleCities(List<String> cities);
+//     Weather.WeatherData fetchWeather(String city);
+//     List<Weather.WeatherData> fetchMultipleCities(List<String> cities);
 // }
 
 /*
- * STEP 3: Create Feign Client (infrastructure/external/weather/WeatherFeignClient.java)
+ * STEP 3: Create Feign Client (infrastructure/input/external/weather/WeatherFeignClient.java)
  *
- * Use Spring Cloud OpenFeign to define HTTP calls.
- * Example: OpenWeatherMap API
+ * Returns the wire DTO from STEP 3b, never the domain record.
  */
 
-// @FeignClient(
-//     name = "weather-api",
-//     url = "https://api.openweathermap.org",
-//     configuration = WeatherFeignConfiguration.class
-// )
+// @FeignClient(name = "weather-api", url = "https://api.openweathermap.org",
+//              configuration = WeatherFeignConfiguration.class)
 // public interface WeatherFeignClient {
 //     @GetMapping("/data/2.5/weather")
-//     WeatherResponse getWeather(
-//         @RequestParam("q") String city,
-//         @RequestParam("appid") String apiKey
-//     );
+//     WeatherResponse getWeather(@RequestParam("q") String city, @RequestParam("appid") String apiKey);
 // }
 
 /*
- * STEP 4: Create Feign Configuration (infrastructure/external/weather/WeatherFeignConfiguration.java)
+ * STEP 3b: Create the wire DTO (infrastructure/input/external/weather/WeatherResponse.java)
+ *
+ * Anti-corruption layer on the input side: external names via @JsonProperty
+ * (com.fasterxml.jackson.annotation works with Jackson 2 and 3), translation in toDomain().
+ * Reference: AisVesselResponse.
+ */
+
+// @JsonIgnoreProperties(ignoreUnknown = true)
+// public record WeatherResponse(
+//         @JsonProperty("name") String name,
+//         @JsonProperty("main_temp") double mainTemp,
+//         @JsonProperty("main_humidity") Double mainHumidity,
+//         @JsonProperty("dt") long dt
+// ) {
+//     public Weather.WeatherData toDomain() {
+//         return new Weather.WeatherData(name, mainTemp, mainHumidity, dt);
+//     }
+// }
+
+/*
+ * STEP 4: Create Feign Configuration (infrastructure/input/external/weather/WeatherFeignConfiguration.java)
  *
  * Configure timeouts, error handling, and resilience patterns.
  */
@@ -89,7 +87,7 @@ package io.github.raphonzius.lvc.live.domain.template;
 // }
 
 /*
- * STEP 5: Create Error Decoder (infrastructure/external/weather/WeatherErrorDecoder.java)
+ * STEP 5: Create Error Decoder (infrastructure/input/external/weather/WeatherErrorDecoder.java)
  *
  * Handle API-specific errors gracefully.
  */
@@ -107,7 +105,7 @@ package io.github.raphonzius.lvc.live.domain.template;
 // }
 
 /*
- * STEP 6: Create Infrastructure Adapter (infrastructure/external/weather/WeatherAdapter.java)
+ * STEP 6: Create Infrastructure Adapter (infrastructure/input/external/weather/WeatherAdapter.java)
  *
  * Implements the port interface using the Feign client.
  * Add @CircuitBreaker annotation for fault tolerance.
@@ -129,12 +127,11 @@ package io.github.raphonzius.lvc.live.domain.template;
 //         name = "weather-api",
 //         fallbackMethod = "fetchWeatherFallback"
 //     )
-//     public Weather.WeatherRecord fetchWeather(String city) {
-//         var response = weatherFeignClient.getWeather(city, apiKey);
-//         return mapToWeatherRecord(response);
+//     public Weather.WeatherData fetchWeather(String city) {
+//         return weatherFeignClient.getWeather(city, apiKey).toDomain();
 //     }
 //
-//     public Weather.WeatherRecord fetchWeatherFallback(String city, Exception ex) {
+//     public Weather.WeatherData fetchWeatherFallback(String city, Exception ex) {
 //         log.warn("Weather API unavailable for city: {}", city);
 //         return null; // or return cached data
 //     }
@@ -143,37 +140,71 @@ package io.github.raphonzius.lvc.live.domain.template;
 /*
  * STEP 7: Create Application Service (application/service/WeatherService.java)
  *
- * Orchestrates between domain logic and infrastructure.
- * Coordinates with streaming layer.
+ * Orchestrates fetch -> publish through ports only. No try/catch/logging boilerplate:
+ * the polling runner (STEP 8) owns that.
  */
 
 // @Service
+// @RequiredArgsConstructor
 // public class WeatherService {
 //     private final WeatherPort weatherPort;
-//     private final StreamingPort streamingPort;
+//     private final WeatherStreamingPort weatherStreamingPort;   // domain/streaming/
 //
 //     public void fetchAndStreamWeather(List<String> cities) {
-//         cities.stream()
-//             .map(weatherPort::fetchWeather)
-//             .forEach(streamingPort::publishWeather);
+//         weatherStreamingPort.publishWeather(cities.stream().map(weatherPort::fetchWeather).toList());
+//     }
+// }
+
+/*
+ * STEP 7b: Map to the event-hub contract and publish (infrastructure/output/grpc/)
+ *
+ * 1. Add a pure mapping method to EventRequestMapper (anti-corruption layer, unit-test it
+ *    with a fixed Clock, including null optional fields), e.g.:
+ *
+ *      public EventRequest toEvent(Weather.WeatherData data) {
+ *          var payload = RainAreaPayload.newBuilder()...;
+ *          return envelope("craam", EntityType.RAIN_AREA, data.location()).setRainArea(payload).build();
+ *      }
+ *
+ * 2. The streaming adapter is transport only — EventPublisher handles virtual threads,
+ *    the concurrency limit, per-call deadline, failure counting and the batch summary log:
+ */
+
+// @Component
+// @RequiredArgsConstructor
+// public class GrpcWeatherStreamingAdapter implements WeatherStreamingPort {
+//     private final EventRequestMapper mapper;
+//     private final EventPublisher publisher;
+//
+//     @Override
+//     public void publishWeather(List<Weather.WeatherData> data) {
+//         publisher.publish("weather", data.stream().map(mapper::toEvent).toList());
 //     }
 // }
 
 /*
  * STEP 8: Create Scheduler (infrastructure/scheduler/WeatherPollingScheduler.java)
  *
- * Configure periodic polling of the API.
+ * Implement PollingJob (Strategy) and delegate to PollingJobRunner, which binds a
+ * correlation id (ScopedValue + MDC), logs, records the lvc.polling.duration timer
+ * (tags job/outcome) and swallows failures so the schedule keeps running.
  */
 
 // @Component
-// public class WeatherPollingScheduler {
+// @RequiredArgsConstructor
+// public class WeatherPollingScheduler implements PollingJob {
+//     private final PollingJobRunner runner;
 //     private final WeatherService weatherService;
 //
 //     @Scheduled(fixedDelayString = "${weather.polling.interval:60000}")
 //     public void pollWeather() {
-//         weatherService.fetchAndStreamWeather(
-//             List.of("São Paulo", "Rio de Janeiro", "Salvador")
-//         );
+//         runner.run(this);
+//     }
+//
+//     @Override public String name() { return "weather"; }
+//
+//     @Override public void poll() {
+//         weatherService.fetchAndStreamWeather(List.of("São Paulo", "Rio de Janeiro", "Salvador"));
 //     }
 // }
 
@@ -187,7 +218,7 @@ package io.github.raphonzius.lvc.live.domain.template;
 // @RequestMapping("/api/v1/weather")
 // public class WeatherController {
 //     @GetMapping("/{city}")
-//     public ResponseEntity<Weather.WeatherRecord> getWeather(@PathVariable String city) {
+//     public ResponseEntity<Weather.WeatherData> getWeather(@PathVariable String city) {
 //         var weather = weatherPort.fetchWeather(city);
 //         return ResponseEntity.ok(weather);
 //     }

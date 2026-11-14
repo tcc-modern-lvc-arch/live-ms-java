@@ -2,6 +2,8 @@ package io.github.raphonzius.lvc.live.infrastructure.exception;
 
 import org.springframework.http.HttpStatus;
 
+import java.util.Objects;
+
 /**
  * Root of the infrastructure exception hierarchy.
  * Thrown when an infrastructure adapter fails to communicate with an external system.
@@ -18,14 +20,15 @@ public sealed class InfrastructureException extends RuntimeException
 
     private final HttpStatus httpStatus;
 
+    // Flexible constructor bodies (JEP 513): validate and assign before super(...).
     public InfrastructureException(String message, HttpStatus httpStatus) {
+        this.httpStatus = Objects.requireNonNull(httpStatus, "httpStatus");
         super(message);
-        this.httpStatus = httpStatus;
     }
 
     public InfrastructureException(String message, Throwable cause, HttpStatus httpStatus) {
+        this.httpStatus = Objects.requireNonNull(httpStatus, "httpStatus");
         super(message, cause);
-        this.httpStatus = httpStatus;
     }
 
     /** HTTP status this exception maps to in the REST response. */

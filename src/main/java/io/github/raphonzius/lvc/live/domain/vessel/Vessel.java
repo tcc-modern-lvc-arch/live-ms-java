@@ -1,9 +1,11 @@
 package io.github.raphonzius.lvc.live.domain.vessel;
 
 /**
- * Domain model representing a vessel with AIS data.
- * Sealed interface — only VesselData record is permitted.
- * Uses Java 25 features: sealed interfaces, records, pattern matching.
+ * Domain model representing a vessel position report.
+ * Sealed interface — only {@link VesselData} is permitted.
+ *
+ * <p>Field names are domain names; the AIS Friends wire format (snake_case JSON, extra
+ * fields) lives in the AIS input adapter ({@code AisVesselResponse}) and never reaches here.</p>
  */
 public sealed interface Vessel permits Vessel.VesselData {
 
@@ -15,66 +17,28 @@ public sealed interface Vessel permits Vessel.VesselData {
     long timestamp();
 
     /**
-     * Concrete implementation of Vessel as a record.
-     * Immutable, compact representation of vessel data.
+     * Immutable vessel position report, carrying only the fields the service uses.
+     *
+     * @param id         provider-assigned identifier (fallback entity id when {@code mmsi} is absent)
+     * @param mmsi       Maritime Mobile Service Identity, if reported
+     * @param name       registered name, falling back to the AIS-broadcast name; may be {@code null}
+     * @param shipType   ship type label (e.g. {@code Type_71}); may be {@code null}
+     * @param latitude   latitude in decimal degrees
+     * @param longitude  longitude in decimal degrees
+     * @param timestamp  position timestamp as reported by the provider ({@code 0} when unknown)
+     * @param speedKnots speed over ground in knots, if reported
+     * @param headingDeg true heading in degrees, if reported
      */
     record VesselData(
             long id,
-            Long vessel_id,
-            String vesselClass,
-            Long imo,
             Long mmsi,
             String name,
-            String name_ais,
-            Long ship_type_id,
-            Long detailed_type_id,
-            Long timestamp_of_position,
-            Long length,
-            Long beam,
-            Long to_bow,
-            Long to_stern,
-            Long to_port,
-            Long to_starboard,
-            Long true_heading,
-            Double course_over_ground,
-            Double speed_over_ground,
-            Double draught,
-            Long navigational_status_id,
-            String flag,
+            String shipType,
             double latitude,
             double longitude,
-            Long lat_grid,
-            Long lon_grid
+            long timestamp,
+            Double speedKnots,
+            Integer headingDeg
     ) implements Vessel {
-
-        @Override
-        public long id() {
-            return id;
-        }
-
-        @Override
-        public String name() {
-            return name != null ? name : name_ais;
-        }
-
-        @Override
-        public String shipType() {
-            return "Type_" + (detailed_type_id != null ? detailed_type_id : 0);
-        }
-
-        @Override
-        public double latitude() {
-            return latitude;
-        }
-
-        @Override
-        public double longitude() {
-            return longitude;
-        }
-
-        @Override
-        public long timestamp() {
-            return timestamp_of_position != null ? timestamp_of_position : 0L;
-        }
     }
 }

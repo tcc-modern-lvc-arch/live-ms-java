@@ -48,6 +48,12 @@ public class OlhoVivoAuthInterceptor implements RequestInterceptor {
     /**
      * Performs POST /Login/Autenticar?token={token}, captures the Set-Cookie header.
      * Thread-safe: only one thread authenticates at a time.
+     *
+     * <p>Kept as {@code synchronized} on purpose: since JEP 491 (JDK 24) a virtual thread
+     * blocking on I/O inside a monitor no longer pins its carrier, and the lock is only
+     * contended during the rare (re)login — the fast path in {@link #apply} is a lock-free
+     * {@code AtomicBoolean} read. A lock-free single-flight scheme (shared CompletableFuture)
+     * would add complexity without measurable benefit here.</p>
      */
     public synchronized void authenticate() {
         if (authenticated.get()) {

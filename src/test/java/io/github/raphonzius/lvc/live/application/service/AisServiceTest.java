@@ -129,14 +129,7 @@ class AisServiceTest {
     }
 
     private static Vessel.VesselData vesselData(long id) {
-        return new Vessel.VesselData(
-                id, id, "cargo", 0L, 123456789L,
-                "VESSEL_" + id, "VESSEL_AIS_" + id,
-                70L, 71L, System.currentTimeMillis(),
-                100L, 20L, 50L, 50L, 10L, 10L,
-                0L, 90.0, 5.5, 6.0,
-                0L, "BR",
-                -23.5, -46.5, 0L, 0L
-        );
+        return new Vessel.VesselData(id, 123456789L, "VESSEL_" + id, "Type_71",
+                -23.5, -46.5, System.currentTimeMillis(), 5.5, 90);
     }
 }

@@ -39,7 +39,7 @@ public class CgespController implements CgespApi {
         } else {
             try {
                 queryDate = LocalDate.parse(date, DATE_FMT);
-            } catch (DateTimeParseException e) {
+            } catch (DateTimeParseException _) {
                 log.warn("Invalid date format '{}' — expected DD/MM/YYYY", date);
                 return ResponseEntity.badRequest().build();
             }
@@ -56,7 +56,7 @@ public class CgespController implements CgespApi {
         try {
             fromDate = LocalDate.parse(from, DATE_FMT);
             toDate   = LocalDate.parse(to,   DATE_FMT);
-        } catch (DateTimeParseException e) {
+        } catch (DateTimeParseException _) {
             log.warn("Invalid date format in range query from='{}' to='{}' — expected DD/MM/YYYY", from, to);
             return ResponseEntity.badRequest().build();
         }

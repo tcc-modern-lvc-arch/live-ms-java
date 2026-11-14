@@ -1,6 +1,5 @@
 package io.github.raphonzius.lvc.live.infrastructure.input.external.ais;
 
-import io.github.raphonzius.lvc.live.domain.vessel.Vessel;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,10 +28,10 @@ public interface AisFeignClient {
      * @param lonMax maximum longitude
      * @param latMax maximum latitude
      * @param zoom zoom level
-     * @return list of vessel data
+     * @return raw vessel records in the AIS Friends wire format
      */
     @GetMapping("/vessels/bounding-box")
-    List<Vessel.VesselData> getVessels(
+    List<AisVesselResponse> getVessels(
             @RequestParam("lon_min") double lonMin,
             @RequestParam("lat_min") double latMin,
             @RequestParam("lon_max") double lonMax,

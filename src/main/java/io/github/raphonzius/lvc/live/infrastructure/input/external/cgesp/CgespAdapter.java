@@ -126,7 +126,7 @@ public class CgespAdapter implements FloodingPort {
         FloodingPoint.FloodStatus status;
         try {
             status = FloodingPoint.FloodStatus.fromCssClass(statusClass);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException _) {
             log.warn("CGESP: unknown status class '{}' — skipping", statusClass);
             return null;
         }

@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -18,7 +17,8 @@ import java.util.List;
  * This adapter IMPLEMENTS the domain port AisPort.
  * It adapts the AIS API to the domain's expectations.
  *
- * Circuit breaker is configured via ResilienceConfiguration.
+ * Translates the AIS Friends wire format ({@link AisVesselResponse}) into the domain record.
+ * Circuit breaker {@code ais-api} is configured in application.yaml (resilience4j).
  */
 @Slf4j
 @Component
@@ -39,12 +39,13 @@ public class AisAdapter implements AisPort {
         log.info("Fetching vessels from AIS API - Box: ({},{})-({},{}), Zoom: {}",
                 lonMin, latMin, lonMax, latMax, zoom);
 
-        var vessels = aisFeignClient.getVessels(lonMin, latMin, lonMax, latMax, zoom);
-
-        if (vessels != null && !vessels.isEmpty()) {
-            log.info("Successfully fetched {} vessels from AIS API", vessels.size());
+        var response = aisFeignClient.getVessels(lonMin, latMin, lonMax, latMax, zoom);
+        if (response == null || response.isEmpty()) {
+            return List.of();
         }
 
+        var vessels = response.stream().map(AisVesselResponse::toDomain).toList();
+        log.info("Successfully fetched {} vessels from AIS API", vessels.size());
         return vessels;
     }
 
@@ -61,6 +62,6 @@ public class AisAdapter implements AisPort {
             Exception exception
     ) {
         log.warn("AIS API circuit breaker activated - returning empty list", exception);
-        return Collections.emptyList();
+        return List.of();
     }
 }
