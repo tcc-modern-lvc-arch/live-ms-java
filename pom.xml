@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.6</version>
+        <version>4.1.2</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -20,17 +20,35 @@
         <java.version>25</java.version>
 
         <!-- Spring Family Dependencies -->
-        <spring-cloud.version>5.0.1</spring-cloud.version>
-        <springdoc.version>3.0.2</springdoc.version>
+        <spring-cloud.version>2025.1.4</spring-cloud.version>
+        <springdoc.version>3.2.0</springdoc.version>
 
         <!-- General Dependencies Version -->
-        <jsoup.version>1.22.1</jsoup.version>
+        <jsoup.version>1.24.1</jsoup.version>
 
         <!-- gRPC / Protobuf -->
-        <grpc.version>1.79.0</grpc.version>
-        <protobuf.version>4.34.0</protobuf.version>
+        <grpc-java.version>1.85.1</grpc-java.version>
+        <protobuf-java.version>4.36.2</protobuf-java.version>
         <proto-shared.version>1.0.0</proto-shared.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- CVE-2026-102554 (HIGH): Guava DoS via unthrottled allocation on deserialization; transitive from grpc-api -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>33.7.2-android</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -41,8 +59,6 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
-            <version>${spring-cloud.version}</version>
-            <scope>compile</scope>
         </dependency>
 
         <dependency>
@@ -55,8 +71,6 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
-            <version>${spring-cloud.version}</version>
-            <scope>compile</scope>
         </dependency>
 
         <!-- proto-shared: gRPC contracts for event-hub -->
@@ -70,22 +84,18 @@
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-netty-shaded</artifactId>
-            <version>${grpc.version}</version>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-stub</artifactId>
-            <version>${grpc.version}</version>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-protobuf</artifactId>
-            <version>${grpc.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>${protobuf.version}</version>
         </dependency>
 
         <dependency>
@@ -97,7 +107,6 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-vault-config</artifactId>
-            <version>${spring-cloud.version}</version>
         </dependency>
 
         <dependency>
