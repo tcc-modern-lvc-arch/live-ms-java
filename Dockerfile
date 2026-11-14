@@ -63,6 +63,6 @@ ENV JAVA_TOOL_OPTIONS="-XX:+UseCompactObjectHeaders -XX:+UseG1GC -XX:MaxRAMPerce
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
-    CMD wget -q -O /dev/null http://127.0.0.1:8080/actuator/health/liveness || exit 1
+    CMD wget -q -O /dev/null http://127.0.0.1:8080/actuator/health/readiness || exit 1
 
 ENTRYPOINT ["java", "-XX:AOTCache=/app/app.aot", "-jar", "/app/live-ms-java.jar"]
