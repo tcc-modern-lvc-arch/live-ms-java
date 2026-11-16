@@ -97,6 +97,12 @@ event-hub:
 
 `.github/workflows/security.yml` runs `mvn verify` and two Trivy gates (filesystem and image) that block HIGH/CRITICAL vulnerabilities with an available fix.
 
+## Documentation
+
+- `docs/adr/0001-spring-boot-vs-quarkus.md`: decision record (Spring Boot 4.1 kept for now)
+- `bench/README.md`: Spring Boot vs Quarkus benchmark of the AIS slice
+- `poc-quarkus/README.md`: Quarkus proof of concept of the AIS slice
+
 ## License
 
 Apache 2.0

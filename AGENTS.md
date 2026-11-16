@@ -171,6 +171,12 @@ Edit `*.polling.interval` in `application.yaml` (milliseconds).
 ### Adjust gRPC Settings
 Edit `event-hub.grpc.*` (publishing) or `spring.grpc.client.channel.event-hub.*` (transport) in `application.yaml`.
 
+## Documentation
+
+- `docs/adr/0001-spring-boot-vs-quarkus.md`: ADR (status Proposed). Decision: keep Spring Boot 4.1 for both Java services. Migrating `live-ms-java` to Quarkus stays a prepared option with explicit triggers.
+- `bench/README.md`: reproducible Spring Boot vs Quarkus benchmark of the AIS slice (`bench/run.py`, fake AIS and Event Hub servers).
+- `poc-quarkus/README.md`: Quarkus 3.40 proof of concept of the AIS slice. It is a separate Maven project, not a module of the root POM.
+
 ## Key Files
 
 | File | Purpose |

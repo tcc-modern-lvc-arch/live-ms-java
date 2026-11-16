@@ -1,0 +1,83 @@
+__  ____  __  _____   ___  __ ____  ______ 
+ --/ __ \/ / / / _ | / _ \/ //_/ / / / __/ 
+ -/ /_/ / /_/ / __ |/ , _/ ,< / /_/ /\ \   
+--\___\_\____/_/ |_/_/|_/_/|_|\____/___/   
+2026-11-14 15:34:46,562 INFO  [io.quarkus] (main) live-ms-quarkus-poc 0.0.1-SNAPSHOT on JVM (powered by Quarkus 3.40.1.2) started in 0.485s. Listening on: http://0.0.0.0:8080
+2026-11-14 15:34:46,564 INFO  [io.quarkus] (main) Profile prod activated. 
+2026-11-14 15:34:46,564 INFO  [io.quarkus] (main) Installed features: [cdi, grpc-client, rest, rest-client, rest-client-jackson, rest-jackson, scheduler, smallrye-context-propagation, smallrye-fault-tolerance, smallrye-health, vertx]
+2026-11-14 15:34:47,058 INFO  [io.quarkus.grpc.runtime.supports.Channels] (quarkus-virtual-thread-0) Creating Netty gRPC channel ...
+2026-11-14 15:34:47,110 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-0) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:34:47,934 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-0) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:34:47,941 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-0) Streaming 2000 vessels to Event Hub
+2026-11-14 15:34:48,032 INFO  [io.grpc.netty.TcpMetrics] (quarkus-virtual-thread-0) Epoll available during static init of TcpMetrics:false
+2026-11-14 15:34:51,637 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-1) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:34:51,715 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-1) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:34:51,715 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-1) Streaming 2000 vessels to Event Hub
+2026-11-14 15:34:52,470 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-2) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:34:52,534 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-2) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:34:52,534 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-2) Streaming 2000 vessels to Event Hub
+2026-11-14 15:34:53,188 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-3) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:34:53,278 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-3) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:34:53,278 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-3) Streaming 2000 vessels to Event Hub
+2026-11-14 15:34:53,895 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-4) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:34:53,938 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-4) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:34:53,938 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-4) Streaming 2000 vessels to Event Hub
+2026-11-14 15:34:54,477 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-5) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:34:54,496 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-5) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:34:54,496 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-5) Streaming 2000 vessels to Event Hub
+2026-11-14 15:34:54,925 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-6) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:34:54,940 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-6) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:34:54,941 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-6) Streaming 2000 vessels to Event Hub
+2026-11-14 15:34:55,293 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-7) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:34:55,313 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-7) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:34:55,313 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-7) Streaming 2000 vessels to Event Hub
+2026-11-14 15:34:55,595 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-8) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:34:55,609 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-8) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:34:55,609 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-8) Streaming 2000 vessels to Event Hub
+2026-11-14 15:34:55,900 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-9) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:34:55,912 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-9) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:34:55,912 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-9) Streaming 2000 vessels to Event Hub
+2026-11-14 15:34:56,201 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-10) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:34:56,219 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-10) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:34:56,219 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-10) Streaming 2000 vessels to Event Hub
+2026-11-14 15:34:56,491 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-11) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:34:56,505 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-11) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:34:56,505 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-11) Streaming 2000 vessels to Event Hub
+2026-11-14 15:34:56,776 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-12) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:34:56,791 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-12) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:34:56,792 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-12) Streaming 2000 vessels to Event Hub
+2026-11-14 15:34:57,106 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-13) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:34:57,121 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-13) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:34:57,121 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-13) Streaming 2000 vessels to Event Hub
+2026-11-14 15:34:57,449 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-14) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:34:57,476 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-14) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:34:57,476 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-14) Streaming 2000 vessels to Event Hub
+2026-11-14 15:34:57,787 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-15) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:34:57,809 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-15) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:34:57,809 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-15) Streaming 2000 vessels to Event Hub
+2026-11-14 15:34:58,119 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-16) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:34:58,134 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-16) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:34:58,135 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-16) Streaming 2000 vessels to Event Hub
+2026-11-14 15:34:58,470 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-17) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:34:58,486 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-17) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:34:58,486 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-17) Streaming 2000 vessels to Event Hub
+2026-11-14 15:34:58,828 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-18) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:34:58,848 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-18) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:34:58,848 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-18) Streaming 2000 vessels to Event Hub
+2026-11-14 15:34:59,169 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-19) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:34:59,181 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-19) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:34:59,182 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-19) Streaming 2000 vessels to Event Hub
+2026-11-14 15:34:59,489 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-20) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:34:59,504 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-20) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:34:59,504 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-20) Streaming 2000 vessels to Event Hub
+2026-11-14 15:34:59,811 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-21) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:34:59,821 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-21) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:34:59,821 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-21) Streaming 2000 vessels to Event Hub
+2026-11-14 15:35:00,088 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-22) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:35:00,099 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-22) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:35:00,099 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-22) Streaming 2000 vessels to Event Hub
+2026-11-14 15:35:00,395 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-23) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:35:00,412 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-23) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:35:00,412 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-23) Streaming 2000 vessels to Event Hub
+2026-11-14 15:35:01,231 INFO  [io.quarkus.grpc.runtime.supports.Channels] (main) Shutting down gRPC channel ManagedChannelOrphanWrapper{delegate=ManagedChannelImpl{logId=1, target=dns:///localhost:50051}}
+2026-11-14 15:35:01,240 INFO  [io.quarkus] (main) live-ms-quarkus-poc stopped in 0.027s

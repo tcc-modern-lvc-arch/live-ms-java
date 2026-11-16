@@ -1,0 +1,13 @@
+__  ____  __  _____   ___  __ ____  ______ 
+ --/ __ \/ / / / _ | / _ \/ //_/ / / / __/ 
+ -/ /_/ / /_/ / __ |/ , _/ ,< / /_/ /\ \   
+--\___\_\____/_/ |_/_/|_/_/|_|\____/___/   
+2026-11-14 15:22:02,761 INFO  [io.quarkus] (main) live-ms-quarkus-poc 0.0.1-SNAPSHOT native (powered by Quarkus 3.40.1.2) started in 0.022s. Listening on: http://0.0.0.0:8080
+2026-11-14 15:22:02,761 INFO  [io.quarkus] (main) Profile prod activated. 
+2026-11-14 15:22:02,761 INFO  [io.quarkus] (main) Installed features: [cdi, grpc-client, rest, rest-client, rest-client-jackson, rest-jackson, scheduler, smallrye-context-propagation, smallrye-fault-tolerance, smallrye-health, vertx]
+2026-11-14 15:22:03,001 INFO  [io.quarkus.grpc.runtime.supports.Channels] (quarkus-virtual-thread-0) Creating Netty gRPC channel ...
+2026-11-14 15:22:03,002 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-0) Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14 15:22:03,115 INFO  [io.github.raphonzius.lvc.live.quarkus.infrastructure.AisAdapter] (quarkus-virtual-thread-0) Successfully fetched 2000 vessels from AIS API
+2026-11-14 15:22:03,115 INFO  [io.github.raphonzius.lvc.live.quarkus.application.AisService] (quarkus-virtual-thread-0) Streaming 2000 vessels to Event Hub
+2026-11-14 15:22:07,771 INFO  [io.quarkus.grpc.runtime.supports.Channels] (Shutdown thread) Shutting down gRPC channel ManagedChannelOrphanWrapper{delegate=ManagedChannelImpl{logId=1, target=dns:///localhost:50051}}
+2026-11-14 15:22:07,772 INFO  [io.quarkus] (Shutdown thread) live-ms-quarkus-poc stopped in 0.002s
