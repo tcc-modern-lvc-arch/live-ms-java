@@ -1,12 +1,12 @@
 package io.github.raphonzius.lvc.live.infrastructure.input.external;
 
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import io.github.raphonzius.lvc.live.infrastructure.config.properties.UpstreamProperties;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Metrics;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.Clock;
@@ -46,9 +46,8 @@ public class UpstreamTelemetry {
     private final ConcurrentHashMap<String, AtomicLong> lastInvalidWarn = new ConcurrentHashMap<>();
 
     @Autowired
-    public UpstreamTelemetry(ObjectProvider<MeterRegistry> registry,
-                             @Value("${lvc.upstream.log-stack-interval:5m}") Duration logStackInterval) {
-        this(registry.getIfAvailable(() -> Metrics.globalRegistry), Clock.systemUTC(), logStackInterval);
+    public UpstreamTelemetry(ObjectProvider<MeterRegistry> registry, UpstreamProperties properties) {
+        this(registry.getIfAvailable(() -> Metrics.globalRegistry), Clock.systemUTC(), properties.logStackInterval());
     }
 
     public UpstreamTelemetry(MeterRegistry registry, Clock clock, Duration logStackInterval) {

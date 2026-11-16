@@ -5,14 +5,13 @@ import io.github.raphonzius.lvc.live.domain.flooding.FloodingPoint;
 import io.github.raphonzius.lvc.live.domain.flooding.FloodingPort;
 import io.github.raphonzius.lvc.live.domain.streaming.FloodingStreamingPort;
 import io.github.raphonzius.lvc.live.domain.streaming.PublishResult;
+import io.github.raphonzius.lvc.live.infrastructure.config.properties.CgespProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -37,12 +36,11 @@ class CgespServiceTest {
     @Mock
     private FloodingStreamingPort floodingStreamingPort;
 
-    @InjectMocks
     private CgespService service;
 
     @BeforeEach
-    void injectConfig() {
-        ReflectionTestUtils.setField(service, "maxRangeDays", 30);
+    void setUp() {
+        service = new CgespService(floodingPort, floodingStreamingPort, new CgespProperties(null, 30));
     }
 
     // -------------------------------------------------------------------------

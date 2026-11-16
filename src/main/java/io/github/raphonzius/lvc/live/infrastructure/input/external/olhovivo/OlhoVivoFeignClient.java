@@ -17,11 +17,7 @@ import java.util.List;
  * Only the endpoints required for the targeted polling workflow are active.
  * Commented endpoints are available in the API but not used in this project.
  */
-@FeignClient(
-        name = "olhovivo-api",
-        url = "${olhovivo.api.url:https://api.olhovivo.sptrans.com.br/v2.1}",
-        configuration = OlhoVivoFeignConfiguration.class
-)
+@FeignClient(name = "olhovivo-api", configuration = OlhoVivoFeignConfiguration.class)
 public interface OlhoVivoFeignClient {
 
     // -------------------------------------------------------------------------

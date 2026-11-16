@@ -10,11 +10,9 @@ import io.grpc.ManagedChannel;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Metrics;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.grpc.client.ChannelBuilderOptions;
-import org.springframework.grpc.client.GrpcChannelBuilderCustomizer;
 import org.springframework.grpc.client.GrpcChannelFactory;
 
 import java.time.Clock;
@@ -24,26 +22,23 @@ import java.time.Clock;
  *
  * <p>The channel is the named channel {@value #CHANNEL} resolved by Boot's
  * {@link GrpcChannelFactory} from {@code spring.grpc.client.channel.event-hub.*}
- * (target, keepalive, retry policy as service config). This class only adds what the
- * properties cannot express: explicit {@code enableRetry()}, the shutdown grace period,
- * and the publishing beans.</p>
+ * (target, keepalive, retry policy as service config; grpc-java retry is on by default).
+ * This class only adds what the properties cannot express: the shutdown grace period
+ * (so no {@code @ImportGrpcClients}) and the publishing beans.</p>
  *
  * <p>Shutdown: the channel bean is shut down when the context closes, and Boot's channel
  * factory then waits up to {@code event-hub.grpc.shutdown-grace-period} for in-flight calls.</p>
  */
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties(EventHubProperties.class)
 public class EventHubGrpcConfig {
 
     /** Name of the Boot-managed channel ({@code spring.grpc.client.channel.event-hub}). */
     public static final String CHANNEL = "event-hub";
 
     @Bean(destroyMethod = "shutdown")
-    @SuppressWarnings("unchecked")
     public ManagedChannel eventHubChannel(GrpcChannelFactory channelFactory, EventHubProperties properties) {
         var options = ChannelBuilderOptions.defaults()
-                .withShutdownGracePeriod(properties.grpc().shutdownGracePeriod())
-                .withCustomizer(enableRetry());
+                .withShutdownGracePeriod(properties.grpc().shutdownGracePeriod());
         return channelFactory.createChannel(CHANNEL, options);
     }
 
@@ -68,16 +63,5 @@ public class EventHubGrpcConfig {
     @Bean
     public EventRequestMapper eventRequestMapper(EventHubProperties properties) {
         return new EventRequestMapper(properties.grpc().areaId(), Clock.systemUTC());
-    }
-
-    /**
-     * Retry is on by default in grpc-java; enabled explicitly so the service-config retry policy
-     * is never silently ignored. Raw type: the concrete builder type (shaded Netty in production,
-     * in-process in tests) is chosen by Boot's channel factory, and Java cannot infer the
-     * F-bounded {@code T extends ManagedChannelBuilder<T>} for a lambda.
-     */
-    @SuppressWarnings("rawtypes")
-    private static GrpcChannelBuilderCustomizer enableRetry() {
-        return (_, builder) -> builder.enableRetry();
     }
 }

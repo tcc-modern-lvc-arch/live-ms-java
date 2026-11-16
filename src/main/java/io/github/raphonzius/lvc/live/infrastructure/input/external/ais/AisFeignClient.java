@@ -13,11 +13,7 @@ import java.util.List;
  * Location: infrastructure/input/external/ais/
  * This is an INPUT ADAPTER - fetches data from external system
  */
-@FeignClient(
-        name = "ais-api",
-        url = "${ais.api.url:https://www.aisfriends.com}",
-        configuration = AisFeignConfiguration.class
-)
+@FeignClient(name = "ais-api")
 public interface AisFeignClient {
 
     /**

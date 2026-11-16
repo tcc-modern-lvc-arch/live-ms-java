@@ -45,23 +45,35 @@ spring:
             connectTimeout: 5000   # Time in ms to establish connection
             readTimeout: 10000      # Time in ms to wait for data
             loggerLevel: basic      # Log level for Feign requests (basic, full, none)
+          # Per-client config (key = @FeignClient name); override a URL with e.g.
+          # -Dspring.cloud.openfeign.client.config.ais-api.url=...
+          ais-api:
+            url: https://www.aisfriends.com
+            error-decoder: io.github.raphonzius.lvc.live.infrastructure.input.external.ais.AisErrorDecoder
+            default-request-headers:   # browser-like headers required by AIS Friends (lists: no comma splitting)
+              User-Agent: ["Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"]
+              Accept: ["application/json, text/plain, */*"]
+              Accept-Language: ["en-US,en;q=0.9"]
+              Referer: ["https://www.aisfriends.com/"]
+          cgesp-api:
+            url: https://www.cgesp.org
+            error-decoder: io.github.raphonzius.lvc.live.infrastructure.input.external.cgesp.CgespErrorDecoder
+          olhovivo-api:
+            url: https://api.olhovivo.sptrans.com.br/v2.1
 
 # AIS (Automatic Identification System) Polling Configuration
 ais:
-  api.url: https://www.aisfriends.com   # override (e.g. AIS_API_URL) for tests/benchmarks
   polling:
     interval: 30000  # Poll every 30 seconds
 
 # CGESP (Flooding) Configuration
 cgesp:
-  api.url: https://www.cgesp.org
   polling.interval: 60000  # Poll every 60 seconds (1 minute)
   max-range-days: 30  # Maximum calendar days allowed in a synchronous range query
 
 # OlhoVivo (SPTrans) Configuration
 # olhovivo.token injected at runtime from Vault (secret/live-ms-java)
 olhovivo:
-  api.url: https://api.olhovivo.sptrans.com.br/v2.1
   login-cooldown: 60s  # wait after a failed login before trying again (no login per API call)
   polling:
     interval: 60000  # Poll every 60 seconds

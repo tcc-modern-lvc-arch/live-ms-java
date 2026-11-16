@@ -1,13 +1,14 @@
 package io.github.raphonzius.lvc.live.infrastructure.config.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 /**
  * CGESP flooding scraper configuration properties.
  * Loaded from application.yaml under the 'cgesp' key.
  */
 @ConfigurationProperties(prefix = "cgesp")
-public record CgespProperties(Polling polling, int maxRangeDays) {
+public record CgespProperties(Polling polling, @DefaultValue("30") int maxRangeDays) {
 
     public CgespProperties {
         if (polling == null) polling = new Polling(60000);

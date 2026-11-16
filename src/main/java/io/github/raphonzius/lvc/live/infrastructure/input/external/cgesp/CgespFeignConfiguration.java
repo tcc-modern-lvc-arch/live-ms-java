@@ -1,11 +1,9 @@
 package io.github.raphonzius.lvc.live.infrastructure.input.external.cgesp;
 
-import feign.Logger;
 import feign.Response;
 import feign.Retryer;
 import feign.codec.DecodeException;
 import feign.codec.Decoder;
-import feign.codec.ErrorDecoder;
 import org.springframework.context.annotation.Bean;
 
 import java.io.IOException;
@@ -14,7 +12,8 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * Feign configuration for the CGESP HTML scraper client.
- * Registers a raw-string decoder (bypasses JSON) and a custom error decoder.
+ * Registers a raw-string decoder (bypasses JSON) and the retryer (args, so no property);
+ * URL, error decoder and log level live in {@code spring.cloud.openfeign.client.config.cgesp-api}.
  */
 public class CgespFeignConfiguration {
 
@@ -39,12 +38,6 @@ public class CgespFeignConfiguration {
         };
     }
 
-    /** Creates the error decoder that maps HTTP errors to {@link CgespApiException}. */
-    @Bean
-    public ErrorDecoder cgespErrorDecoder() {
-        return new CgespErrorDecoder();
-    }
-
     /**
      * Feign-level retry: 3 attempts, 500ms initial backoff, 2s max — executes before
      * the Resilience4j CircuitBreaker sees the outcome, so transient failures don't
@@ -53,11 +46,5 @@ public class CgespFeignConfiguration {
     @Bean
     public Retryer cgespRetryer() {
         return new Retryer.Default(500, 2000, 3);
-    }
-
-    /** Feign log level — BASIC logs method, URL, status, and elapsed time. */
-    @Bean
-    Logger.Level cgespFeignLoggerLevel() {
-        return Logger.Level.BASIC;
     }
 }

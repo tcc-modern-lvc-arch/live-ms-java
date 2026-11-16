@@ -7,9 +7,9 @@ import io.github.raphonzius.lvc.live.domain.flooding.FloodingPoint;
 import io.github.raphonzius.lvc.live.domain.flooding.FloodingPort;
 import io.github.raphonzius.lvc.live.domain.streaming.FloodingStreamingPort;
 import io.github.raphonzius.lvc.live.domain.streaming.PublishResult;
+import io.github.raphonzius.lvc.live.infrastructure.config.properties.CgespProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -37,8 +37,7 @@ public class CgespService {
     private final FloodingPort floodingPort;
     private final FloodingStreamingPort floodingStreamingPort;
 
-    @Value("${cgesp.max-range-days:30}")
-    private int maxRangeDays;
+    private final CgespProperties properties;
 
     /**
      * Fetches today's flooding points (São Paulo timezone) and publishes them to Event Hub.
@@ -80,7 +79,7 @@ public class CgespService {
      */
     public List<FloodingPoint.FloodData> fetchFloodingsByRange(LocalDate from, LocalDate to) {
         long days = ChronoUnit.DAYS.between(from, to);
-        int maxDays = this.maxRangeDays;
+        int maxDays = properties.maxRangeDays();
         if (days >= maxDays) {
             throw new InvalidRangeException(
                     "Range spans " + (days + 1) + " days — maximum is " + maxDays);

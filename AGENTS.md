@@ -69,7 +69,7 @@ infrastructure/
                                Grpc*StreamingAdapter, PublishSummary
   scheduler/                   *PollingScheduler (implement PollingJob), PollingJobRunner, PollingOutcome
   observability/               CorrelationId (ScopedValue + MDC)
-  config/                      EventHubGrpcConfig, JacksonConfiguration, WebConfig, properties/*
+  config/                      EventHubGrpcConfig, WebConfig, properties/*
 ```
 
 ### Data Flow Example (AIS)
@@ -119,14 +119,14 @@ Data is published to Event Hub via gRPC for downstream consumption.
 - Polling every `ais.polling.interval` (default 30000 ms)
 
 ### OlhoVivo (SPTrans)
-- Base URL `olhovivo.api.url` (default `https://api.olhovivo.sptrans.com.br/v2.1`)
+- Base URL `spring.cloud.openfeign.client.config.olhovivo-api.url` (default `https://api.olhovivo.sptrans.com.br/v2.1`)
 - Cookie-based session auth via `OlhoVivoAuthInterceptor`; the token is injected from Vault (`secret/live-ms-java`)
 - Lazy auth: POST `/Login/Autenticar?token={token}` on first request, caches `JSESSIONID`; re-authenticates on 401
 - Line filters per bus line in `olhovivo.polling.line-terms`
 - Polling every `olhovivo.polling.interval` (default 60000 ms)
 
 ### CGESP (Flooding)
-- Base URL `cgesp.api.url` (default `https://www.cgesp.org`); no auth
+- Base URL `spring.cloud.openfeign.client.config.cgesp-api.url` (default `https://www.cgesp.org`); no auth
 - HTML scraping via Jsoup: `GET /v3/alagamentos.jsp?dataBusca=DD%2FMM%2FYYYY`
 - Scrapes: zone (`h1.tit-bairros`), neighborhood (`td.bairro`), flooding points (`div.ponto-de-alagamento`)
 - End time inference: missing → current SP time (if today) or `23:59` (if historical)
@@ -137,7 +137,7 @@ Data is published to Event Hub via gRPC for downstream consumption.
 
 | Area | Keys (`application.yaml`) |
 |------|--------------------------|
-| Source URLs | `ais.api.url`, `cgesp.api.url`, `olhovivo.api.url` (override with env vars such as `AIS_API_URL`, used by tests and benchmarks) |
+| Source URLs | `spring.cloud.openfeign.client.config.{ais-api,cgesp-api,olhovivo-api}.url` (override with `-D`/`--` properties; the OlhoVivo login uses `olhovivo.base-url`) |
 | Polling | `ais.polling.interval`, `cgesp.polling.interval`, `olhovivo.polling.interval` |
 | Event Hub publishing | `event-hub.grpc.area-id`, `deadline` (2s), `max-concurrency` (32), `batch-size` (500), `shutdown-grace-period` (5s) |
 | Event Hub transport | `spring.grpc.client.channel.event-hub.*` (target built from `event-hub.grpc.host/port`) |

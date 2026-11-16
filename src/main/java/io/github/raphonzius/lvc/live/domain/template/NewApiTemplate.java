@@ -40,8 +40,7 @@ package io.github.raphonzius.lvc.live.domain.template;
  * Returns the wire DTO from STEP 3b, never the domain record.
  */
 
-// @FeignClient(name = "weather-api", url = "https://api.openweathermap.org",
-//              configuration = WeatherFeignConfiguration.class)
+// @FeignClient(name = "weather-api")   // url/timeouts/error-decoder: application.yaml (STEP 4)
 // public interface WeatherFeignClient {
 //     @GetMapping("/data/2.5/weather")
 //     WeatherResponse getWeather(@RequestParam("q") String city, @RequestParam("appid") String apiKey);
@@ -68,23 +67,16 @@ package io.github.raphonzius.lvc.live.domain.template;
 // }
 
 /*
- * STEP 4: Create Feign Configuration (infrastructure/input/external/weather/WeatherFeignConfiguration.java)
+ * STEP 4: Configure the client in application.yaml (convention over configuration)
  *
- * Configure timeouts, error handling, and resilience patterns.
+ * No @Configuration class: URL, timeouts, log level and error decoder are Spring Cloud OpenFeign
+ * properties keyed by the @FeignClient name. A @Bean is only for what has no property
+ * (e.g. a Retryer with arguments, or a decoder that depends on another bean).
  */
 
-// @Configuration
-// public class WeatherFeignConfiguration {
-//     @Bean
-//     Logger.Level feignLoggerLevel() {
-//         return Logger.Level.BASIC;
-//     }
-//
-//     @Bean
-//     public ErrorDecoder errorDecoder() {
-//         return new WeatherErrorDecoder();
-//     }
-// }
+// spring.cloud.openfeign.client.config.weather-api:
+//   url: https://api.openweathermap.org
+//   error-decoder: io.github.raphonzius.lvc.live.infrastructure.input.external.weather.WeatherErrorDecoder
 
 /*
  * STEP 5: Create Error Decoder (infrastructure/input/external/weather/WeatherErrorDecoder.java)
@@ -114,12 +106,11 @@ package io.github.raphonzius.lvc.live.domain.template;
 // @Component
 // public class WeatherAdapter implements WeatherPort {
 //     private final WeatherFeignClient weatherFeignClient;
-//     private final String apiKey; // From config
+//     private final String apiKey; // from a @ConfigurationProperties record (found by @ConfigurationPropertiesScan), not @Value
 //
-//     public WeatherAdapter(WeatherFeignClient weatherFeignClient,
-//                          @Value("${weather.api.key}") String apiKey) {
+//     public WeatherAdapter(WeatherFeignClient weatherFeignClient, WeatherProperties properties) {
 //         this.weatherFeignClient = weatherFeignClient;
-//         this.apiKey = apiKey;
+//         this.apiKey = properties.apiKey();
 //     }
 //
 //     @Override

@@ -15,6 +15,8 @@ import io.grpc.stub.StreamObserver;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import io.github.raphonzius.lvc.live.infrastructure.config.properties.EventHubProperties;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.ssl.SslAutoConfiguration;
 import org.springframework.boot.grpc.client.autoconfigure.CompositeChannelFactoryAutoConfiguration;
@@ -61,11 +63,16 @@ class EventHubGrpcConfigTest {
         server.shutdownNow();
     }
 
+    /** Stands in for the application's {@code @ConfigurationPropertiesScan}. */
+    @EnableConfigurationProperties(EventHubProperties.class)
+    static class Props {
+    }
+
     private ApplicationContextRunner runner() {
         return new ApplicationContextRunner()
                 .withConfiguration(AutoConfigurations.of(SslAutoConfiguration.class,
                         GrpcClientAutoConfiguration.class, CompositeChannelFactoryAutoConfiguration.class))
-                .withUserConfiguration(EventHubGrpcConfig.class)
+                .withUserConfiguration(EventHubGrpcConfig.class, Props.class)
                 .withPropertyValues(
                         "spring.grpc.client.inprocess.enabled=false",
                         CHANNEL + "target=static://localhost:" + server.getPort(),
