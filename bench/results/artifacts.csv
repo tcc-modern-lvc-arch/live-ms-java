@@ -1,8 +1,0 @@
-variant,bytes
-spring-jvm,68381265
-spring-jvm-c1,68381265
-spring-aot,145537374
-spring-aot-c1,145537374
-quarkus-jvm,33359816
-quarkus-aot,76597493
-quarkus-native,73509992
