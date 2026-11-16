@@ -114,7 +114,7 @@ Data is published to Event Hub via gRPC for downstream consumption.
 ## External APIs
 
 ### AIS (AISFriends)
-- Feign client, base URL `ais.api.url` (default `https://www.aisfriends.com`); no auth
+- Feign client, base URL `spring.cloud.openfeign.client.config.ais-api.url` (default `https://www.aisfriends.com`); no auth
 - Bounding-box query; response parsed by `AisVesselResponse` (ignores unknown fields)
 - Polling every `ais.polling.interval` (default 30000 ms)
 
