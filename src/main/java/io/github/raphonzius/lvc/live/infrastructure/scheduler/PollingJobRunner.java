@@ -49,58 +49,66 @@ public class PollingJobRunner {
         this.registry = registry;
     }
 
-    /** Executes one cycle of {@code job}; never throws. */
-    public PollingOutcome run(PollingJob job) {
-        var outcome = new AtomicReference<PollingOutcome>();
-        // A manual poll arrives inside a request that already has an id: keep it, so the cycle logs match the response header.
-        var id = CorrelationId.current().orElseGet(CorrelationId::newId);
-        CorrelationId.runWith(id, () -> outcome.set(timed(job)));
-        return outcome.get();
+    /** Executes one cycle of {@code job}; never throws (failures are logged and timed). */
+    public void run(PollingJob job) {
+        try {
+            runOrThrow(job);
+        } catch (RuntimeException _) {
+            // already logged and timed; the schedule must keep running
+        }
     }
 
-    private PollingOutcome timed(PollingJob job) {
+    /** Like {@link #run}, but rethrows the cycle's exception so a REST caller can map it. */
+    public void runOrThrow(PollingJob job) {
+        var failure = new AtomicReference<RuntimeException>();
+        // A manual poll arrives inside a request that already has an id: keep it, so the cycle logs match the response header.
+        var id = CorrelationId.current().orElseGet(CorrelationId::newId);
+        CorrelationId.runWith(id, () -> {
+            try {
+                timed(job);
+            } catch (RuntimeException e) {
+                failure.set(e);
+            }
+        });
+        if (failure.get() != null) {
+            throw failure.get();
+        }
+    }
+
+    private void timed(PollingJob job) {
         log.debug("[{}] polling cycle started", job.name());
         var start = System.nanoTime();
-        PollingOutcome outcome;
+        PublishResult result;
         try {
-            var result = Objects.requireNonNullElse(job.poll(), PublishResult.EMPTY);
-            var duration = Duration.ofNanos(System.nanoTime() - start);
-            outcome = result.totalFailure() ? new PollingOutcome.Failed(duration, result, null)
-                    : result.hasFailures() ? new PollingOutcome.Partial(duration, result)
-                    : new PollingOutcome.Succeeded(duration, result);
-        } catch (Exception e) {
-            outcome = new PollingOutcome.Failed(
-                    Duration.ofNanos(System.nanoTime() - start), PublishResult.EMPTY, e);
+            result = Objects.requireNonNullElse(job.poll(), PublishResult.EMPTY);
+        } catch (RuntimeException e) {
+            var elapsed = Duration.ofNanos(System.nanoTime() - start);
+            log.error("[{}] polling cycle failed after {} ms", job.name(), elapsed.toMillis(), e);
+            record(job, "failed", elapsed);
+            throw e;
         }
+        var elapsed = Duration.ofNanos(System.nanoTime() - start);
+        if (result.totalFailure()) {
+            log.error("[{}] polling cycle failed after {} ms: nothing delivered, {} failed",
+                    job.name(), elapsed.toMillis(), result.failed());
+            record(job, "failed", elapsed);
+        } else if (result.hasFailures()) {
+            log.warn("[{}] polling cycle partially failed after {} ms: {} delivered, {} failed",
+                    job.name(), elapsed.toMillis(), result.succeeded(), result.failed());
+            record(job, "partial", elapsed);
+        } else {
+            log.debug("[{}] polling cycle completed in {} ms ({} delivered)",
+                    job.name(), elapsed.toMillis(), result.succeeded());
+            record(job, "success", elapsed);
+        }
+    }
 
-        // Exhaustive switch over the sealed outcome — record patterns, no default branch.
-        var tag = switch (outcome) {
-            case PollingOutcome.Succeeded(var duration, var result) -> {
-                log.debug("[{}] polling cycle completed in {} ms ({} delivered)",
-                        job.name(), duration.toMillis(), result.succeeded());
-                yield "success";
-            }
-            case PollingOutcome.Partial(var duration, var result) -> {
-                log.warn("[{}] polling cycle partially failed after {} ms: {} delivered, {} failed",
-                        job.name(), duration.toMillis(), result.succeeded(), result.failed());
-                yield "partial";
-            }
-            case PollingOutcome.Failed(var duration, var result, var error) -> {
-                if (error != null) {
-                    log.error("[{}] polling cycle failed after {} ms", job.name(), duration.toMillis(), error);
-                } else {
-                    log.error("[{}] polling cycle failed after {} ms: nothing delivered, {} failed",
-                            job.name(), duration.toMillis(), result.failed());
-                }
-                yield "failed";
-            }
-        };
+    private void record(PollingJob job, String outcome, Duration elapsed) {
         Timer.builder(TIMER_NAME)
                 .description("Duration of one fetch-and-publish polling cycle")
                 .tag("job", job.name())
-                .tag("outcome", tag)
+                .tag("outcome", outcome)
                 .register(registry)
-                .record(outcome.duration());
-        return outcome;
+                .record(elapsed);
     }
 }

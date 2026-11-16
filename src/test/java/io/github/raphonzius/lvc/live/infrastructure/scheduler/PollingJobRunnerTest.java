@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link PollingJobRunner}: the single place where polling cycles are
@@ -33,38 +34,30 @@ class PollingJobRunnerTest {
 
     @Test
     void successfulCycleIsTimedWithSuccessOutcome() {
-        var outcome = runner.run(new TestJob("ais", () -> new PublishResult(3, 0)));
+        runner.run(new TestJob("ais", () -> new PublishResult(3, 0)));
 
-        assertThat(outcome).isInstanceOf(PollingOutcome.Succeeded.class);
         assertThat(count("ais", "success")).isEqualTo(1);
     }
 
     @Test
     void emptyCycleIsASuccess() {
-        var outcome = runner.run(new TestJob("ais", () -> PublishResult.EMPTY));
+        runner.run(new TestJob("ais", () -> PublishResult.EMPTY));
 
-        assertThat(outcome).isInstanceOf(PollingOutcome.Succeeded.class);
         assertThat(count("ais", "success")).isEqualTo(1);
     }
 
     @Test
     void someFailedEventsMakeTheCyclePartial() {
-        var outcome = runner.run(new TestJob("ais", () -> new PublishResult(2, 1)));
+        runner.run(new TestJob("ais", () -> new PublishResult(2, 1)));
 
-        assertThat(outcome).isInstanceOfSatisfying(PollingOutcome.Partial.class,
-                partial -> assertThat(partial.result()).isEqualTo(new PublishResult(2, 1)));
         assertThat(count("ais", "partial")).isEqualTo(1);
         assertThat(count("ais", "success")).isZero();
     }
 
     @Test
     void nothingDeliveredWithFailuresIsFailedEvenWithoutException() {
-        var outcome = runner.run(new TestJob("ais", () -> new PublishResult(0, 4)));
+        runner.run(new TestJob("ais", () -> new PublishResult(0, 4)));
 
-        assertThat(outcome).isInstanceOfSatisfying(PollingOutcome.Failed.class, failed -> {
-            assertThat(failed.error()).isNull();
-            assertThat(failed.result()).isEqualTo(new PublishResult(0, 4));
-        });
         assertThat(count("ais", "failed")).isEqualTo(1);
         assertThat(count("ais", "success")).isZero();
     }
@@ -92,10 +85,7 @@ class PollingJobRunnerTest {
     void failingCycleIsSwallowedAndTimedWithFailureOutcome() {
         var boom = new IllegalStateException("upstream down");
 
-        var outcome = runner.run(new TestJob("cgesp", () -> { throw boom; }));
-
-        assertThat(outcome).isInstanceOfSatisfying(PollingOutcome.Failed.class,
-                failed -> assertThat(failed.error()).isSameAs(boom));
+        assertThatThrownBy(() -> runner.runOrThrow(new TestJob("cgesp", () -> { throw boom; }))).isSameAs(boom);
         assertThat(registry.find(PollingJobRunner.TIMER_NAME)
                 .tags("job", "cgesp", "outcome", "failed").timer().count()).isEqualTo(1);
     }

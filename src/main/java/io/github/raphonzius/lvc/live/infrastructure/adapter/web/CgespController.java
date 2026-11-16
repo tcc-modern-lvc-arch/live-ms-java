@@ -78,7 +78,7 @@ public class CgespController implements CgespApi {
     @Override
     public ResponseEntity<String> manualPoll() {
         log.info("REST: manual CGESP poll triggered");
-        pollingJobRunner.run(cgespPollingJob).rethrowIfThrown();
+        pollingJobRunner.runOrThrow(cgespPollingJob);
         return ResponseEntity.accepted().body("CGESP flooding polling initiated");
     }
 

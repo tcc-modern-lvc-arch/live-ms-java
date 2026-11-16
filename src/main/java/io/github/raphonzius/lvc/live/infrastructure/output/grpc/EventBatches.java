@@ -50,7 +50,7 @@ final class EventBatches {
 
     /** Publishes the mapped events and folds the mapping failures into the result. */
     static PublishResult publish(EventPublisher publisher, String stream, Mapped mapped) {
-        var delivered = publisher.publish(stream, mapped.events()).toResult();
+        var delivered = publisher.publish(stream, mapped.events());
         return delivered.plus(PublishResult.failedOf(mapped.mapFailures()));
     }
 }

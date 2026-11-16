@@ -53,7 +53,6 @@ domain/
   bus/ flooding/               Same pattern for OlhoVivo and CGESP
   streaming/                   Output ports: VesselStreamingPort, BusStreamingPort, FloodingStreamingPort
   exception/                   DomainException (sealed hierarchy)
-  template/NewApiTemplate      Step-by-step guide for adding a new API
   TimeZones                    Shared ZoneId constants
 
 application/
@@ -66,8 +65,8 @@ infrastructure/
   input/external/
     ais/ olhovivo/ cgesp/      Feign clients, wire DTOs (e.g. AisVesselResponse), error decoders, adapters with @CircuitBreaker
   output/grpc/                 EventPublisher, EventRequestMapper, EventSender / GrpcEventSender,
-                               Grpc*StreamingAdapter, PublishSummary
-  scheduler/                   *PollingScheduler (implement PollingJob), PollingJobRunner, PollingOutcome
+                               Grpc*StreamingAdapter
+  scheduler/                   *PollingScheduler (implement PollingJob), PollingJobRunner
   observability/               CorrelationId (ScopedValue + MDC)
   config/                      EventHubGrpcConfig, WebConfig, properties/*
 ```
@@ -163,7 +162,15 @@ Env vars used by `docker-compose.yml`: `SPRING_CLOUD_VAULT_HOST`, `EVENT_HUB_GRP
 ## Common Tasks
 
 ### Add a New External API
-Follow the steps in `domain/template/NewApiTemplate.java` (domain model → port → Feign client → wire DTO → Feign configuration → error decoder → adapter with `@CircuitBreaker` → application service → event-hub mapping → scheduler implementing `PollingJob` → REST controller → `application.yaml`). `AisVesselResponse` is the reference for the wire DTO.
+Copy the pattern of `infrastructure/input/external/ais/` (AIS is the reference):
+- Domain record plus input port in `domain/<api>/`, and an output streaming port in `domain/streaming/`.
+- Wire DTO and Feign client in `infrastructure/input/external/<api>/`; client config (URL, timeouts) under `spring.cloud.openfeign.client.config.<name>` in `application.yaml`.
+- Adapter implementing the port, with `@CircuitBreaker` only on the HTTP call; report fallbacks and bad records through `UpstreamTelemetry`.
+- Mapper to `EventRequest` in `EventRequestMapper`, plus a `Grpc<Api>StreamingAdapter` that publishes via `EventBatches`.
+- Application service in `application/service/` orchestrating fetch and publish.
+- `PollingJob` implementation plus a `*PollingScheduler` delegating to `PollingJobRunner`; add a `POST .../poll` controller calling `runOrThrow`.
+- Properties as a record with `@ConfigurationProperties`, picked up by `@ConfigurationPropertiesScan`.
+- Add the interval, circuit breaker and API settings to `application.yaml`.
 
 ### Update Polling Interval
 Edit `*.polling.interval` in `application.yaml` (milliseconds).
@@ -181,4 +188,3 @@ Edit `event-hub.grpc.*` (publishing) or `spring.grpc.client.channel.event-hub.*`
 | `.github/workflows/security.yml` | Build plus Trivy gates (fs and image) |
 | `src/main/resources/application.yaml` | Polling intervals, API URLs, circuit breakers, gRPC, actuator |
 | `src/main/resources/static/openapi.yaml` | OpenAPI spec served by Swagger UI |
-| `domain/template/NewApiTemplate.java` | Template for adding new APIs |

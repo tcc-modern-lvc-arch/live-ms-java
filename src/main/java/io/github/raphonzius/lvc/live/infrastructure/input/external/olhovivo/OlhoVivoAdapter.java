@@ -33,7 +33,6 @@ public class OlhoVivoAdapter implements OlhoVivoPort {
     public FetchResult<List<BusLine.LineData>> searchLines(String terms) {
         log.debug("Searching OlhoVivo lines: terms={}", terms);
         var lines = feignClient.searchLines(terms);
-        telemetry.success(API);
         return FetchResult.of(lines == null ? List.of() : lines);
     }
 
@@ -47,7 +46,6 @@ public class OlhoVivoAdapter implements OlhoVivoPort {
     public FetchResult<VehiclePosition.PositionResponse> positionsByLine(int lineCode) {
         log.debug("Fetching OlhoVivo positions for lineCode={}", lineCode);
         var positions = feignClient.positionsByLine(lineCode);
-        telemetry.success(API);
         return FetchResult.of(positions);
     }
 

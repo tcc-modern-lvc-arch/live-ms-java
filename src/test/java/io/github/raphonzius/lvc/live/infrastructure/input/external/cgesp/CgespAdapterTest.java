@@ -51,7 +51,7 @@ class CgespAdapterTest {
     @BeforeEach
     void setUp() throws IOException, URISyntaxException {
         adapter = new CgespAdapter(feignClient,
-                new UpstreamTelemetry(registry, java.time.Clock.systemUTC(), java.time.Duration.ofMinutes(5)));
+                new UpstreamTelemetry(registry));
         sampleHtml = Files.readString(
                 Path.of(Objects.requireNonNull(
                         getClass().getClassLoader().getResource("cgesp/alagamentos_sample.html")

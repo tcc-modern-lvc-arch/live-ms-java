@@ -30,7 +30,6 @@ public class AisUpstream {
     public FetchResult<List<AisVesselResponse>> fetch(
             double lonMin, double latMin, double lonMax, double latMax, int zoom) {
         var response = feignClient.getVessels(lonMin, latMin, lonMax, latMax, zoom);
-        telemetry.success(API);
         return FetchResult.of(response == null ? List.of() : response);
     }
 

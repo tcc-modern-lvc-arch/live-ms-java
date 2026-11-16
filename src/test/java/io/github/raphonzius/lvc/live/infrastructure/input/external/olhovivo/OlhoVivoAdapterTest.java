@@ -12,8 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Clock;
-import java.time.Duration;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,7 +36,7 @@ class OlhoVivoAdapterTest {
     @BeforeEach
     void setUp() {
         adapter = new OlhoVivoAdapter(feignClient,
-                new UpstreamTelemetry(registry, Clock.systemUTC(), Duration.ofMinutes(5)));
+                new UpstreamTelemetry(registry));
     }
 
     // -------------------------------------------------------------------------

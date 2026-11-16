@@ -44,7 +44,7 @@ public class VesselController implements VesselApi {
     public ResponseEntity<String> manualPoll() {
         log.info("REST: manual AIS poll triggered");
         // Same path as the scheduler: correlation id, logs and lvc.polling.duration metric.
-        pollingJobRunner.run(aisPollingJob).rethrowIfThrown();
+        pollingJobRunner.runOrThrow(aisPollingJob);
         return ResponseEntity.accepted().body("Polling initiated");
     }
 

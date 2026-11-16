@@ -1,5 +1,6 @@
 package io.github.raphonzius.lvc.live.infrastructure.output.grpc;
 
+import io.github.raphonzius.lvc.live.domain.streaming.PublishResult;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -44,7 +45,7 @@ class EventPublisherTest {
 
         var summary = publisher.publish("vessel", List.of());
 
-        assertThat(summary).isEqualTo(new PublishSummary(0, 0));
+        assertThat(summary).isEqualTo(new PublishResult(0, 0));
         assertThat(calls).hasValue(0);
     }
 
@@ -58,7 +59,7 @@ class EventPublisherTest {
 
         var summary = publisher.publish("vessel", requests(5));
 
-        assertThat(summary).isEqualTo(new PublishSummary(5, 0));
+        assertThat(summary).isEqualTo(new PublishResult(5, 0));
         assertThat(sent).containsExactlyInAnyOrder("e0", "e1", "e2", "e3", "e4");
     }
 
@@ -73,7 +74,7 @@ class EventPublisherTest {
 
         var summary = publisher.publish("bus", requests(3));
 
-        assertThat(summary).isEqualTo(new PublishSummary(2, 1));
+        assertThat(summary).isEqualTo(new PublishResult(2, 1));
         assertThat(summary.total()).isEqualTo(3);
     }
 
@@ -110,7 +111,7 @@ class EventPublisherTest {
                 ? EventAck.newBuilder().setStatus("rejected").setErrorMessage("bad area").build()
                 : ACCEPTED, 4, 10);
 
-        assertThat(publisher.publish("flooding", requests(2))).isEqualTo(new PublishSummary(1, 1));
+        assertThat(publisher.publish("flooding", requests(2))).isEqualTo(new PublishResult(1, 1));
     }
 
     @Test
@@ -162,7 +163,7 @@ class EventPublisherTest {
             default -> EventAck.getDefaultInstance();
         }, 4, 10);
 
-        assertThat(publisher.publish("vessel", requests(3))).isEqualTo(new PublishSummary(1, 2));
+        assertThat(publisher.publish("vessel", requests(3))).isEqualTo(new PublishResult(1, 2));
     }
 
     // ── Task ending with an Error (Future.resultNow would throw ISE) ────────
@@ -176,7 +177,7 @@ class EventPublisherTest {
             return ACCEPTED;
         }, 4, 10);
 
-        assertThat(publisher.publish("vessel", requests(3))).isEqualTo(new PublishSummary(2, 1));
+        assertThat(publisher.publish("vessel", requests(3))).isEqualTo(new PublishResult(2, 1));
     }
 
     // ── Fail-fast when the hub is down ──────────────────────────────────────
@@ -188,7 +189,7 @@ class EventPublisherTest {
         var appender = new ListAppender<ILoggingEvent>();
         appender.start();
         logger.addAppender(appender);
-        PublishSummary summary;
+        PublishResult summary;
         try {
             var publisher = new EventPublisher(_ -> {
                 calls.incrementAndGet();
@@ -201,7 +202,7 @@ class EventPublisherTest {
         }
 
         assertThat(calls).as("only the first window reaches the hub").hasValue(2);
-        assertThat(summary).isEqualTo(new PublishSummary(0, 6));
+        assertThat(summary).isEqualTo(new PublishResult(0, 6));
         assertThat(appender.list.stream().filter(e -> e.getLevel().isGreaterOrEqual(Level.WARN)))
                 .singleElement()
                 .satisfies(e -> assertThat(e.getFormattedMessage())
@@ -216,7 +217,7 @@ class EventPublisherTest {
             throw Status.DEADLINE_EXCEEDED.asRuntimeException();
         }, 4, 3);
 
-        assertThat(publisher.publish("vessel", requests(9))).isEqualTo(new PublishSummary(0, 9));
+        assertThat(publisher.publish("vessel", requests(9))).isEqualTo(new PublishResult(0, 9));
         assertThat(calls).hasValue(3);
     }
 
@@ -231,7 +232,7 @@ class EventPublisherTest {
             throw Status.UNAVAILABLE.asRuntimeException();
         }, 4, 2);
 
-        assertThat(publisher.publish("vessel", requests(6))).isEqualTo(new PublishSummary(2, 4));
+        assertThat(publisher.publish("vessel", requests(6))).isEqualTo(new PublishResult(2, 4));
         assertThat(calls).hasValue(6);
     }
 
@@ -243,7 +244,7 @@ class EventPublisherTest {
             return EventAck.newBuilder().setStatus("rejected").setErrorMessage("bad area").build();
         }, 4, 2);
 
-        assertThat(publisher.publish("vessel", requests(6))).isEqualTo(new PublishSummary(0, 6));
+        assertThat(publisher.publish("vessel", requests(6))).isEqualTo(new PublishResult(0, 6));
         assertThat(calls).hasValue(6);
     }
 

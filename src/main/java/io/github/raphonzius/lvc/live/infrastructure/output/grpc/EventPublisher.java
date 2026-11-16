@@ -1,5 +1,6 @@
 package io.github.raphonzius.lvc.live.infrastructure.output.grpc;
 
+import io.github.raphonzius.lvc.live.domain.streaming.PublishResult;
 import io.github.raphonzius.lvc.live.infrastructure.observability.CorrelationId;
 import io.github.raphonzius.lvc.proto.event.EventRequest;
 import io.grpc.Status;
@@ -77,10 +78,10 @@ public final class EventPublisher {
      *
      * @param stream logical stream name for logs and metrics (e.g. {@code vessel})
      */
-    public PublishSummary publish(String stream, List<EventRequest> requests) {
+    public PublishResult publish(String stream, List<EventRequest> requests) {
         if (requests.isEmpty()) {
             log.debug("[{}] nothing to publish", stream);
-            return PublishSummary.EMPTY;
+            return PublishResult.EMPTY;
         }
         var correlationId = CorrelationId.current().orElseGet(CorrelationId::newId);
         var start = System.nanoTime();
@@ -103,18 +104,18 @@ public final class EventPublisher {
         }
 
         var failed = failures.size() + skipped;
-        var summary = new PublishSummary(requests.size() - failed, failed);
+        var summary = new PublishResult(requests.size() - failed, failed);
         record(stream, summary);
         logSummary(stream, summary, failures, skipped, (System.nanoTime() - start) / 1_000_000);
         return summary;
     }
 
-    private void record(String stream, PublishSummary summary) {
+    private void record(String stream, PublishResult summary) {
         registry.counter(METRIC, "stream", stream, "result", "accepted").increment(summary.succeeded());
         registry.counter(METRIC, "stream", stream, "result", "failed").increment(summary.failed());
     }
 
-    private static void logSummary(String stream, PublishSummary summary, List<Failure> failures,
+    private static void logSummary(String stream, PublishResult summary, List<Failure> failures,
                                    int skipped, long elapsedMs) {
         if (summary.failed() == 0) {
             log.info("[{}] published {}/{} event(s) to EventHub in {} ms",

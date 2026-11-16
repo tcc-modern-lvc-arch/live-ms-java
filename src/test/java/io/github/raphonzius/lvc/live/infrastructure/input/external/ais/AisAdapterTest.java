@@ -12,8 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Clock;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
@@ -45,7 +43,7 @@ class AisAdapterTest {
 
     @BeforeEach
     void setUp() {
-        var telemetry = new UpstreamTelemetry(registry, Clock.systemUTC(), Duration.ofMinutes(5));
+        var telemetry = new UpstreamTelemetry(registry);
         upstream = new AisUpstream(feignClient, telemetry);
         adapter = new AisAdapter(upstream, telemetry);
     }

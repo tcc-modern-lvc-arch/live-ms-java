@@ -44,7 +44,7 @@ public class OlhoVivoController implements OlhoVivoApi {
     @Override
     public ResponseEntity<String> manualPoll() {
         log.info("REST: manual OlhoVivo poll triggered");
-        pollingJobRunner.run(olhoVivoPollingJob).rethrowIfThrown();
+        pollingJobRunner.runOrThrow(olhoVivoPollingJob);
         return ResponseEntity.accepted().body("OlhoVivo polling initiated");
     }
 

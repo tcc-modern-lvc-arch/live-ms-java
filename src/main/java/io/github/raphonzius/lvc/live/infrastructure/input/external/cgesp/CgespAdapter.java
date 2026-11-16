@@ -60,7 +60,6 @@ public class CgespAdapter implements FloodingPort {
         log.debug("Fetching CGESP floodings for date={}", dateParam);
         String html = feignClient.fetchFloodingsHtml(dateParam, "Buscar");
         var floodings = parseHtml(html, date);
-        telemetry.success(API);
         return FetchResult.of(floodings);
     }
 

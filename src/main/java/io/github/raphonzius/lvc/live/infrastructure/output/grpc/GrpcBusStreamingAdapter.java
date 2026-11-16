@@ -19,6 +19,6 @@ public class GrpcBusStreamingAdapter implements BusStreamingPort {
 
     @Override
     public PublishResult publishPositions(VehiclePosition.PositionResponse positions) {
-        return publisher.publish("bus", mapper.toEvents(positions)).toResult();
+        return publisher.publish("bus", mapper.toEvents(positions));
     }
 }
