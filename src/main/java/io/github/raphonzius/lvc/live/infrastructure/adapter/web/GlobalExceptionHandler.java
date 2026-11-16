@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -58,6 +59,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ProblemDetail> handleUnexpected(Exception ex, HttpServletRequest request) {
+        // Spring MVC's own exceptions (no handler/resource, bad method, missing or unsupported
+        // API version, ...) already carry the right 4xx status: keep it instead of turning it into 500.
+        if (ex instanceof ErrorResponse errorResponse) {
+            var status = HttpStatus.valueOf(errorResponse.getStatusCode().value());
+            log.warn("Request rejected by Spring MVC ({}): {}", status.value(), ex.getMessage());
+            return build(status, errorResponse.getBody().getDetail(), request);
+        }
         log.error("Unexpected exception", ex);
         return build(INTERNAL_SERVER_ERROR, "An unexpected error occurred", request);
     }

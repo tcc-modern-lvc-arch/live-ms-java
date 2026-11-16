@@ -12,14 +12,16 @@ public interface VesselStreamingPort {
      * Publishes vessel data to the streaming channel.
      *
      * @param vessel the vessel data to publish
+     * @return how many events were delivered / failed
      */
-    void publishVessel(Vessel vessel);
+    PublishResult publishVessel(Vessel vessel);
 
     /**
      * Publishes a batch of vessel data.
      *
      * @param vesselStream stream of vessels to publish
+     * @return how many events were delivered / failed
      */
-    void publishVesselBatch(java.util.stream.Stream<? extends Vessel> vesselStream);
+    PublishResult publishVesselBatch(java.util.stream.Stream<? extends Vessel> vesselStream);
 }
 

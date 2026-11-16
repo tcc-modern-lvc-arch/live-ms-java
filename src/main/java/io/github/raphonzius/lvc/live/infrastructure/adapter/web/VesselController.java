@@ -2,8 +2,10 @@ package io.github.raphonzius.lvc.live.infrastructure.adapter.web;
 
 import io.github.raphonzius.lvc.live.application.service.AisService;
 import io.github.raphonzius.lvc.live.domain.vessel.AisPort;
-import io.github.raphonzius.lvc.live.domain.vessel.Vessel;
 import io.github.raphonzius.lvc.live.infrastructure.adapter.web.api.VesselApi;
+import io.github.raphonzius.lvc.live.infrastructure.adapter.web.dto.VesselV1Response;
+import io.github.raphonzius.lvc.live.infrastructure.scheduler.AisPollingScheduler;
+import io.github.raphonzius.lvc.live.infrastructure.scheduler.PollingJobRunner;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -22,21 +24,27 @@ public class VesselController implements VesselApi {
 
     private final AisPort aisPort;
     private final AisService aisService;
+    private final PollingJobRunner pollingJobRunner;
+    private final AisPollingScheduler aisPollingJob;
 
     /** {@inheritDoc} */
     @Override
-    public ResponseEntity<List<Vessel.VesselData>> getVessels(
+    public ResponseEntity<List<VesselV1Response>> getVessels(
             double lonMin, double latMin, double lonMax, double latMax, int zoom
     ) {
         log.info("REST: getVessels box=({},{})→({},{})", lonMin, latMin, lonMax, latMax);
-        return ResponseEntity.ok(aisPort.fetchVessels(lonMin, latMin, lonMax, latMax, zoom));
+        // v1.0 keeps answering 200 with an empty list while AIS is unavailable (unchanged behavior);
+        // the outage is visible in lvc.upstream.fallback and in the logs.
+        var vessels = aisPort.fetchVessels(lonMin, latMin, lonMax, latMax, zoom).orElse(List.of());
+        return ResponseEntity.ok(vessels.stream().map(VesselV1Response::from).toList());
     }
 
     /** {@inheritDoc} */
     @Override
     public ResponseEntity<String> manualPoll() {
         log.info("REST: manual AIS poll triggered");
-        aisService.fetchAndStreamVessels();
+        // Same path as the scheduler: correlation id, logs and lvc.polling.duration metric.
+        pollingJobRunner.runOrThrow(aisPollingJob);
         return ResponseEntity.accepted().body("Polling initiated");
     }
 

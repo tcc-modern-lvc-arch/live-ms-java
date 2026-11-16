@@ -15,6 +15,7 @@ public interface FloodingStreamingPort {
      *
      * @param date      the date the flooding data was collected
      * @param floodings list of flooding points to publish
+     * @return how many events were delivered / failed
      */
-    void publishFloodings(LocalDate date, List<FloodingPoint.FloodData> floodings);
+    PublishResult publishFloodings(LocalDate date, List<FloodingPoint.FloodData> floodings);
 }

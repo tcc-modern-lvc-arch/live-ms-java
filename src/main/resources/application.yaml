@@ -45,6 +45,21 @@ spring:
             connectTimeout: 5000   # Time in ms to establish connection
             readTimeout: 10000      # Time in ms to wait for data
             loggerLevel: basic      # Log level for Feign requests (basic, full, none)
+          # Per-client config (key = @FeignClient name); override a URL with e.g.
+          # -Dspring.cloud.openfeign.client.config.ais-api.url=...
+          ais-api:
+            url: https://www.aisfriends.com
+            error-decoder: io.github.raphonzius.lvc.live.infrastructure.input.external.ais.AisErrorDecoder
+            default-request-headers:   # browser-like headers required by AIS Friends (lists: no comma splitting)
+              User-Agent: ["Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"]
+              Accept: ["application/json, text/plain, */*"]
+              Accept-Language: ["en-US,en;q=0.9"]
+              Referer: ["https://www.aisfriends.com/"]
+          cgesp-api:
+            url: https://www.cgesp.org
+            error-decoder: io.github.raphonzius.lvc.live.infrastructure.input.external.cgesp.CgespErrorDecoder
+          olhovivo-api:
+            url: https://api.olhovivo.sptrans.com.br/v2.1
 
 # AIS (Automatic Identification System) Polling Configuration
 ais:
@@ -59,6 +74,7 @@ cgesp:
 # OlhoVivo (SPTrans) Configuration
 # olhovivo.token injected at runtime from Vault (secret/live-ms-java)
 olhovivo:
+  login-cooldown: 60s  # wait after a failed login before trying again (no login per API call)
   polling:
     interval: 60000  # Poll every 60 seconds
     line-terms:      # key=termosBusca for /Linha/Buscar, value=list of tl filters — buses through Mackenzie "Caio Prado C/B"
@@ -118,16 +134,57 @@ springdoc:
     path: /swagger-ui.html  # UI available at /swagger-ui.html
 
 # Event Hub gRPC Configuration
-# live-ms-java publishes events to the event-hub via gRPC
+# live-ms-java publishes events to the event-hub via gRPC (LVC origin = LIVE)
 event-hub:
   grpc:
+    # host/port only feed spring.grpc.client.channel.event-hub.target below
+    # (kept so EVENT_HUB_GRPC_HOST / EVENT_HUB_GRPC_PORT keep working)
     host: localhost
     port: 50051
-    # area_id is assigned by virtual-areas-ms-java for routing
-    # live-ms-java publishes with LVC origin = LIVE
+    area-id: default-area        # routing key; areas are managed by virtual-areas-ms-java
+    deadline: 2s                 # per-call deadline for SendEvent (retries happen within it)
+    max-concurrency: 32          # max in-flight SendEvent RPCs (virtual threads + semaphore)
+    batch-size: 500              # window size when slicing large batches (Gatherers.windowFixed)
+    shutdown-grace-period: 5s    # wait for in-flight RPCs when the channel shuts down
+
+# Spring Boot gRPC client — named channel used by EventHubGrpcConfig
+spring.grpc.client:
+  channel:
+    event-hub:
+      target: "static://${event-hub.grpc.host}:${event-hub.grpc.port}"
+      keepalive:
+        time: 30s
+        timeout: 10s
+        without-calls: false
+      service-config:
+        method:
+          - name:
+              - service: event.EventHub   # all methods of the EventHub service
+            retry:
+              max-attempts: 4
+              initial-backoff: 100ms
+              max-backoff: 1s
+              backoff-multiplier: 2
+              retryable-status-codes: UNAVAILABLE
+
+# Actuator: only health is exposed (container HEALTHCHECK uses /actuator/health/readiness).
+# To read the lvc.* metrics over HTTP locally, add `metrics` to the include list.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
 
 # Logging Configuration
 logging:
+  pattern:
+    # correlation id of the current polling cycle (ScopedValue mirrored into MDC)
+    correlation: "[%X{correlationId:-}] "
   level:
     root: INFO
     io.github.raphonzius.lvc: DEBUG

@@ -1,6 +1,6 @@
 package io.github.raphonzius.lvc.live.infrastructure.adapter.web.api;
 
-import io.github.raphonzius.lvc.live.domain.vessel.Vessel;
+import io.github.raphonzius.lvc.live.infrastructure.adapter.web.dto.VesselV1Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,10 +24,10 @@ public interface VesselApi {
      * @param lonMax eastern longitude bound
      * @param latMax northern latitude bound
      * @param zoom   map zoom level (affects vessel density returned)
-     * @return list of vessel data snapshots
+     * @return list of vessel data snapshots in the frozen v1.0 JSON shape ({@link VesselV1Response})
      */
     @GetMapping(value = "/bounding-box", version = "1.0")
-    ResponseEntity<List<Vessel.VesselData>> getVessels(
+    ResponseEntity<List<VesselV1Response>> getVessels(
             @RequestParam(defaultValue = "-49.0000") double lonMin,
             @RequestParam(defaultValue = "-28.5000") double latMin,
             @RequestParam(defaultValue = "-35.0000") double lonMax,

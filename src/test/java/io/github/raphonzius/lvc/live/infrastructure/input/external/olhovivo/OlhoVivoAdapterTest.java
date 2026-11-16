@@ -1,8 +1,11 @@
 package io.github.raphonzius.lvc.live.infrastructure.input.external.olhovivo;
 
+import io.github.raphonzius.lvc.live.domain.FetchResult;
 import io.github.raphonzius.lvc.live.domain.bus.BusLine;
 import io.github.raphonzius.lvc.live.domain.bus.BusVehicle;
 import io.github.raphonzius.lvc.live.domain.bus.VehiclePosition;
+import io.github.raphonzius.lvc.live.infrastructure.input.external.UpstreamTelemetry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,11 +30,13 @@ class OlhoVivoAdapterTest {
     @Mock
     private OlhoVivoFeignClient feignClient;
 
+    private final SimpleMeterRegistry registry = new SimpleMeterRegistry();
     private OlhoVivoAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new OlhoVivoAdapter(feignClient);
+        adapter = new OlhoVivoAdapter(feignClient,
+                new UpstreamTelemetry(registry));
     }
 
     // -------------------------------------------------------------------------
@@ -43,35 +48,26 @@ class OlhoVivoAdapterTest {
         List<BusLine.LineData> expected = List.of(lineData(1001, 10), lineData(1002, 10));
         when(feignClient.searchLines("178L")).thenReturn(expected);
 
-        List<BusLine.LineData> result = adapter.searchLines("178L");
+        var result = adapter.searchLines("178L");
 
-        assertThat(result).isSameAs(expected);
+        assertThat(result).isEqualTo(FetchResult.of(expected));
         verify(feignClient).searchLines("178L");
     }
 
     @Test
-    void searchLines_returnsEmptyListWhenFeignReturnsEmpty() {
+    void searchLines_returnsEmptyFetchedListWhenFeignReturnsEmpty() {
         when(feignClient.searchLines("UNKNOWN")).thenReturn(List.of());
 
-        List<BusLine.LineData> result = adapter.searchLines("UNKNOWN");
-
-        assertThat(result).isEmpty();
+        assertThat(adapter.searchLines("UNKNOWN")).isEqualTo(FetchResult.of(List.<BusLine.LineData>of()));
     }
 
     @Test
-    void searchLines_fallback_returnsEmptyList() {
-        List<BusLine.LineData> result =
-                adapter.searchLinesFallback("178L", new RuntimeException("circuit open"));
+    void searchLines_fallback_isUnavailableNotEmpty_andCounted() {
+        var result = adapter.searchLinesFallback("178L", new IllegalStateException("timeout"));
 
-        assertThat(result).isEmpty();
-    }
-
-    @Test
-    void searchLines_fallback_returnsEmptyList_onAnyException() {
-        List<BusLine.LineData> result =
-                adapter.searchLinesFallback("5000", new IllegalStateException("timeout"));
-
-        assertThat(result).isEmpty();
+        assertThat(result).isEqualTo(FetchResult.unavailable("IllegalStateException"));
+        assertThat(registry.get("lvc.upstream.fallback")
+                .tags("api", "olhovivo", "reason", "IllegalStateException").counter().count()).isEqualTo(1.0);
     }
 
     // -------------------------------------------------------------------------
@@ -83,40 +79,28 @@ class OlhoVivoAdapterTest {
         VehiclePosition.PositionResponse expected = positionResponse(List.of(vehicleData(42)));
         when(feignClient.positionsByLine(1001)).thenReturn(expected);
 
-        VehiclePosition.PositionResponse result = adapter.positionsByLine(1001);
+        var result = adapter.positionsByLine(1001);
 
-        assertThat(result).isSameAs(expected);
+        assertThat(result).isEqualTo(FetchResult.of(expected));
         verify(feignClient).positionsByLine(1001);
     }
 
     @Test
     void positionsByLine_returnsResponseWithVehicles() {
         List<BusVehicle.VehicleData> vehicles = List.of(vehicleData(10), vehicleData(20));
-        VehiclePosition.PositionResponse response = positionResponse(vehicles);
-        when(feignClient.positionsByLine(999)).thenReturn(response);
+        when(feignClient.positionsByLine(999)).thenReturn(positionResponse(vehicles));
 
-        VehiclePosition.PositionResponse result = adapter.positionsByLine(999);
+        var result = adapter.positionsByLine(999).orElse(null);
 
         assertThat(result.vs()).hasSize(2);
         assertThat(result.hr()).isEqualTo("18:00");
     }
 
     @Test
-    void positionsByLine_fallback_returnsEmptyResponse() {
-        VehiclePosition.PositionResponse result =
-                adapter.positionsByLineFallback(1001, new RuntimeException("circuit open"));
+    void positionsByLine_fallback_isUnavailableNotAnEmptyResponse() {
+        var result = adapter.positionsByLineFallback(1001, new RuntimeException("circuit open"));
 
-        assertThat(result.hr()).isEqualTo("--:--");
-        assertThat(result.vs()).isEmpty();
-        assertThat(result.l()).isEmpty();
-    }
-
-    @Test
-    void positionsByLine_fallback_returnsEmptyResponse_onAnyException() {
-        VehiclePosition.PositionResponse result =
-                adapter.positionsByLineFallback(999, new IllegalStateException("timeout"));
-
-        assertThat(result).isEqualTo(VehiclePosition.PositionResponse.empty());
+        assertThat(result).isEqualTo(FetchResult.unavailable("RuntimeException"));
     }
 
     // -------------------------------------------------------------------------

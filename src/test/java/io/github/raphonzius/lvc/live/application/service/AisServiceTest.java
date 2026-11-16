@@ -1,5 +1,7 @@
 package io.github.raphonzius.lvc.live.application.service;
 
+import io.github.raphonzius.lvc.live.domain.FetchResult;
+import io.github.raphonzius.lvc.live.domain.streaming.PublishResult;
 import io.github.raphonzius.lvc.live.domain.streaming.VesselStreamingPort;
 import io.github.raphonzius.lvc.live.domain.vessel.AisPort;
 import io.github.raphonzius.lvc.live.domain.vessel.Vessel;
@@ -48,8 +50,7 @@ class AisServiceTest {
 
     @Test
     void fetchAndStreamVessels_usesBrazilCoastBoundingBox() {
-        when(aisPort.fetchVessels(LON_MIN, LAT_MIN, LON_MAX, LAT_MAX, ZOOM))
-                .thenReturn(List.of(vesselData(1L)));
+        when(aisPort.fetchVessels(LON_MIN, LAT_MIN, LON_MAX, LAT_MAX, ZOOM)).thenReturn(FetchResult.of(List.of(vesselData(1L))));
 
         service.fetchAndStreamVessels();
 
@@ -59,7 +60,7 @@ class AisServiceTest {
     @Test
     void fetchAndStreamVessels_publishesBatchWhenVesselsReturned() {
         List<Vessel.VesselData> vessels = List.of(vesselData(1L), vesselData(2L));
-        when(aisPort.fetchVessels(LON_MIN, LAT_MIN, LON_MAX, LAT_MAX, ZOOM)).thenReturn(vessels);
+        when(aisPort.fetchVessels(LON_MIN, LAT_MIN, LON_MAX, LAT_MAX, ZOOM)).thenReturn(FetchResult.of(vessels));
 
         service.fetchAndStreamVessels();
 
@@ -70,7 +71,7 @@ class AisServiceTest {
 
     @Test
     void fetchAndStreamVessels_skipsPublishWhenPortReturnsEmptyList() {
-        when(aisPort.fetchVessels(LON_MIN, LAT_MIN, LON_MAX, LAT_MAX, ZOOM)).thenReturn(List.of());
+        when(aisPort.fetchVessels(LON_MIN, LAT_MIN, LON_MAX, LAT_MAX, ZOOM)).thenReturn(FetchResult.of(List.of()));
 
         service.fetchAndStreamVessels();
 
@@ -79,10 +80,42 @@ class AisServiceTest {
 
     @Test
     void fetchAndStreamVessels_skipsPublishWhenPortReturnsNull() {
-        when(aisPort.fetchVessels(LON_MIN, LAT_MIN, LON_MAX, LAT_MAX, ZOOM)).thenReturn(null);
+        when(aisPort.fetchVessels(LON_MIN, LAT_MIN, LON_MAX, LAT_MAX, ZOOM)).thenReturn(FetchResult.of(null));
 
         service.fetchAndStreamVessels();
 
+        verify(vesselStreamingPort, never()).publishVesselBatch(anyStreamOf());
+    }
+
+    // -------------------------------------------------------------------------
+    // Result reporting
+    // -------------------------------------------------------------------------
+
+    @Test
+    void fetchAndStreamVessels_returnsThePublishResultOfThePort() {
+        when(aisPort.fetchVessels(LON_MIN, LAT_MIN, LON_MAX, LAT_MAX, ZOOM))
+                .thenReturn(FetchResult.of(List.of(vesselData(1L), vesselData(2L))));
+        when(vesselStreamingPort.publishVesselBatch(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(new PublishResult(1, 1));
+
+        assertThat(service.fetchAndStreamVessels()).isEqualTo(new PublishResult(1, 1));
+    }
+
+    @Test
+    void fetchAndStreamVessels_emptySnapshotIsAnEmptyResult() {
+        when(aisPort.fetchVessels(LON_MIN, LAT_MIN, LON_MAX, LAT_MAX, ZOOM)).thenReturn(FetchResult.of(List.of()));
+
+        assertThat(service.fetchAndStreamVessels()).isEqualTo(PublishResult.EMPTY);
+    }
+
+    @Test
+    void fetchAndStreamVessels_unavailableSourceIsAFailureNotAnEmptySnapshot() {
+        when(aisPort.fetchVessels(LON_MIN, LAT_MIN, LON_MAX, LAT_MAX, ZOOM))
+                .thenReturn(FetchResult.unavailable("circuit_open"));
+
+        var result = service.fetchAndStreamVessels();
+
+        assertThat(result.totalFailure()).isTrue();
         verify(vesselStreamingPort, never()).publishVesselBatch(anyStreamOf());
     }
 
@@ -98,8 +131,7 @@ class AisServiceTest {
         double latMax = -22.0;
         int zoom = 10;
 
-        when(aisPort.fetchVessels(lonMin, latMin, lonMax, latMax, zoom))
-                .thenReturn(List.of(vesselData(42L)));
+        when(aisPort.fetchVessels(lonMin, latMin, lonMax, latMax, zoom)).thenReturn(FetchResult.of(List.of(vesselData(42L))));
 
         service.fetchAndStreamVessels(lonMin, latMin, lonMax, latMax, zoom);
 
@@ -109,8 +141,7 @@ class AisServiceTest {
     @Test
     void fetchAndStreamVessels_withParams_publishesSingleVessel() {
         Vessel.VesselData v = vesselData(7L);
-        when(aisPort.fetchVessels(anyDouble(), anyDouble(), anyDouble(), anyDouble(), anyInt()))
-                .thenReturn(List.of(v));
+        when(aisPort.fetchVessels(anyDouble(), anyDouble(), anyDouble(), anyDouble(), anyInt())).thenReturn(FetchResult.of(List.of(v)));
 
         service.fetchAndStreamVessels(LON_MIN, LAT_MIN, LON_MAX, LAT_MAX, ZOOM);
 
@@ -129,14 +160,7 @@ class AisServiceTest {
     }
 
     private static Vessel.VesselData vesselData(long id) {
-        return new Vessel.VesselData(
-                id, id, "cargo", 0L, 123456789L,
-                "VESSEL_" + id, "VESSEL_AIS_" + id,
-                70L, 71L, System.currentTimeMillis(),
-                100L, 20L, 50L, 50L, 10L, 10L,
-                0L, 90.0, 5.5, 6.0,
-                0L, "BR",
-                -23.5, -46.5, 0L, 0L
-        );
+        return new Vessel.VesselData(id, 123456789L, "VESSEL_" + id, "Type_71",
+                -23.5, -46.5, System.currentTimeMillis(), 5.5, 90);
     }
 }

@@ -1,6 +1,9 @@
 package io.github.raphonzius.lvc.live.infrastructure.input.external.cgesp;
 
+import io.github.raphonzius.lvc.live.domain.FetchResult;
 import io.github.raphonzius.lvc.live.domain.flooding.FloodingPoint;
+import io.github.raphonzius.lvc.live.infrastructure.input.external.UpstreamTelemetry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,12 +43,15 @@ class CgespAdapterTest {
     @Mock
     private CgespFeignClient feignClient;
 
+    private final SimpleMeterRegistry registry = new SimpleMeterRegistry();
+
     private CgespAdapter adapter;
     private String sampleHtml;
 
     @BeforeEach
     void setUp() throws IOException, URISyntaxException {
-        adapter = new CgespAdapter(feignClient);
+        adapter = new CgespAdapter(feignClient,
+                new UpstreamTelemetry(registry));
         sampleHtml = Files.readString(
                 Path.of(Objects.requireNonNull(
                         getClass().getClassLoader().getResource("cgesp/alagamentos_sample.html")
@@ -61,7 +67,7 @@ class CgespAdapterTest {
     void fetchFloodings_parsesAllFourPoints() {
         when(feignClient.fetchFloodingsHtml("01/04/2026", "Buscar")).thenReturn(sampleHtml);
 
-        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE);
+        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE).orElse(null);
 
         assertThat(result).hasSize(4);
     }
@@ -70,7 +76,7 @@ class CgespAdapterTest {
     void fetchFloodings_delegatesDateFormattingToClient() {
         when(feignClient.fetchFloodingsHtml(eq("01/04/2026"), eq("Buscar"))).thenReturn(sampleHtml);
 
-        adapter.fetchFloodings(HISTORICAL_DATE);
+        adapter.fetchFloodings(HISTORICAL_DATE).orElse(null);
 
         verify(feignClient).fetchFloodingsHtml("01/04/2026", "Buscar");
     }
@@ -83,7 +89,7 @@ class CgespAdapterTest {
     void fetchFloodings_assignsCorrectZones() {
         when(feignClient.fetchFloodingsHtml("01/04/2026", "Buscar")).thenReturn(sampleHtml);
 
-        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE);
+        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE).orElse(null);
 
         assertThat(result.get(0).zone()).isEqualTo("Zona Leste");
         assertThat(result.get(1).zone()).isEqualTo("Zona Sul");
@@ -95,7 +101,7 @@ class CgespAdapterTest {
     void fetchFloodings_assignsCorrectNeighborhoods() {
         when(feignClient.fetchFloodingsHtml("01/04/2026", "Buscar")).thenReturn(sampleHtml);
 
-        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE);
+        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE).orElse(null);
 
         assertThat(result.get(0).neighborhood()).isEqualTo("São Mateus");
         assertThat(result.get(1).neighborhood()).isEqualTo("Vila Prudente");
@@ -111,7 +117,7 @@ class CgespAdapterTest {
     void fetchFloodings_parsesAllFourStatusClassifications() {
         when(feignClient.fetchFloodingsHtml("01/04/2026", "Buscar")).thenReturn(sampleHtml);
 
-        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE);
+        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE).orElse(null);
 
         assertThat(result.get(0).status()).isEqualTo(FloodingPoint.FloodStatus.ATIVO_INTRANSITAVEL);
         assertThat(result.get(1).status()).isEqualTo(FloodingPoint.FloodStatus.INATIVO_INTRANSITAVEL);
@@ -127,7 +133,7 @@ class CgespAdapterTest {
     void fetchFloodings_parsesStartTime() {
         when(feignClient.fetchFloodingsHtml("01/04/2026", "Buscar")).thenReturn(sampleHtml);
 
-        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE);
+        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE).orElse(null);
 
         assertThat(result.get(0).startTime()).isEqualTo(LocalTime.of(17, 52));
         assertThat(result.get(1).startTime()).isEqualTo(LocalTime.of(17, 50));
@@ -139,7 +145,7 @@ class CgespAdapterTest {
     void fetchFloodings_parsesExplicitEndTime() {
         when(feignClient.fetchFloodingsHtml("01/04/2026", "Buscar")).thenReturn(sampleHtml);
 
-        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE);
+        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE).orElse(null);
 
         // points 1 and 2 have explicit end times
         assertThat(result.get(1).endTime()).isEqualTo(LocalTime.of(19, 0));
@@ -150,7 +156,7 @@ class CgespAdapterTest {
     void fetchFloodings_historicalDate_noEndTime_inferredAs2359() {
         when(feignClient.fetchFloodingsHtml("01/04/2026", "Buscar")).thenReturn(sampleHtml);
 
-        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE);
+        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE).orElse(null);
 
         // points 0 and 3 have no end time — historical date → 23:59
         assertThat(result.get(0).endTime()).isEqualTo(LocalTime.of(23, 59));
@@ -165,7 +171,7 @@ class CgespAdapterTest {
                 today.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")), "Buscar"
         )).thenReturn(sampleHtml);
 
-        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(today);
+        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(today).orElse(null);
 
         LocalTime after = LocalTime.now(SAO_PAULO_TZ);
         // point 0 has no end time — today → endTime ≈ now
@@ -183,7 +189,7 @@ class CgespAdapterTest {
     void fetchFloodings_parsesStreet() {
         when(feignClient.fetchFloodingsHtml("01/04/2026", "Buscar")).thenReturn(sampleHtml);
 
-        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE);
+        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE).orElse(null);
 
         assertThat(result.get(0).street()).isEqualTo("AV JOSE ALENCAR GOMES DA SILVA");
         assertThat(result.get(1).street()).isEqualTo("R ANTONIO DE ALMEIDA");
@@ -195,7 +201,7 @@ class CgespAdapterTest {
     void fetchFloodings_parsesDirection() {
         when(feignClient.fetchFloodingsHtml("01/04/2026", "Buscar")).thenReturn(sampleHtml);
 
-        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE);
+        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE).orElse(null);
 
         assertThat(result.get(0).direction()).isEqualTo("CENTRO/BAIRRO");
         assertThat(result.get(1).direction()).isEqualTo("AMBOS");
@@ -207,7 +213,7 @@ class CgespAdapterTest {
     void fetchFloodings_parsesReference() {
         when(feignClient.fetchFloodingsHtml("01/04/2026", "Buscar")).thenReturn(sampleHtml);
 
-        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE);
+        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE).orElse(null);
 
         assertThat(result.get(0).reference()).isEqualTo("AV SAPOPEMBA");
         assertThat(result.get(1).reference()).isEqualTo("R MANUEL DE AVITA");
@@ -242,7 +248,7 @@ class CgespAdapterTest {
     void fetchFloodings_setsDateOnAllPoints() {
         when(feignClient.fetchFloodingsHtml("01/04/2026", "Buscar")).thenReturn(sampleHtml);
 
-        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE);
+        List<FloodingPoint.FloodData> result = adapter.fetchFloodings(HISTORICAL_DATE).orElse(null);
 
         assertThat(result).allMatch(p -> HISTORICAL_DATE.equals(p.date()));
     }
@@ -252,10 +258,11 @@ class CgespAdapterTest {
     // -------------------------------------------------------------------------
 
     @Test
-    void fallback_returnsEmptyList() {
-        List<FloodingPoint.FloodData> result =
-                adapter.fetchFloodingsFallback(HISTORICAL_DATE, new RuntimeException("circuit open"));
+    void fallback_isUnavailableNotEmpty_andCounted() {
+        var result = adapter.fetchFloodingsFallback(HISTORICAL_DATE, new RuntimeException("retries exhausted"));
 
-        assertThat(result).isEmpty();
+        assertThat(result).isEqualTo(FetchResult.unavailable("RuntimeException"));
+        assertThat(registry.get("lvc.upstream.fallback").tags("api", "cgesp", "reason", "RuntimeException")
+                .counter().count()).isEqualTo(1.0);
     }
 }

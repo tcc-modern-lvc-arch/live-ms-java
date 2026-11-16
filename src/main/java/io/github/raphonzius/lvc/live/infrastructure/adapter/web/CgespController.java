@@ -3,6 +3,8 @@ package io.github.raphonzius.lvc.live.infrastructure.adapter.web;
 import io.github.raphonzius.lvc.live.application.service.CgespService;
 import io.github.raphonzius.lvc.live.domain.flooding.FloodingPoint;
 import io.github.raphonzius.lvc.live.infrastructure.adapter.web.api.CgespApi;
+import io.github.raphonzius.lvc.live.infrastructure.scheduler.CgespPollingScheduler;
+import io.github.raphonzius.lvc.live.infrastructure.scheduler.PollingJobRunner;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +31,8 @@ public class CgespController implements CgespApi {
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final CgespService cgespService;
+    private final PollingJobRunner pollingJobRunner;
+    private final CgespPollingScheduler cgespPollingJob;
 
     /** {@inheritDoc} */
     @Override
@@ -39,7 +43,7 @@ public class CgespController implements CgespApi {
         } else {
             try {
                 queryDate = LocalDate.parse(date, DATE_FMT);
-            } catch (DateTimeParseException e) {
+            } catch (DateTimeParseException _) {
                 log.warn("Invalid date format '{}' — expected DD/MM/YYYY", date);
                 return ResponseEntity.badRequest().build();
             }
@@ -56,7 +60,7 @@ public class CgespController implements CgespApi {
         try {
             fromDate = LocalDate.parse(from, DATE_FMT);
             toDate   = LocalDate.parse(to,   DATE_FMT);
-        } catch (DateTimeParseException e) {
+        } catch (DateTimeParseException _) {
             log.warn("Invalid date format in range query from='{}' to='{}' — expected DD/MM/YYYY", from, to);
             return ResponseEntity.badRequest().build();
         }
@@ -74,7 +78,7 @@ public class CgespController implements CgespApi {
     @Override
     public ResponseEntity<String> manualPoll() {
         log.info("REST: manual CGESP poll triggered");
-        cgespService.fetchAndStreamFloodings();
+        pollingJobRunner.runOrThrow(cgespPollingJob);
         return ResponseEntity.accepted().body("CGESP flooding polling initiated");
     }
 

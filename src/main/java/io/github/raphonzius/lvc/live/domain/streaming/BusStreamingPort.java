@@ -12,6 +12,7 @@ public interface BusStreamingPort {
      * Publishes a vehicle position snapshot to the streaming channel.
      *
      * @param positions the position response to publish
+     * @return how many events were delivered / failed
      */
-    void publishPositions(VehiclePosition.PositionResponse positions);
+    PublishResult publishPositions(VehiclePosition.PositionResponse positions);
 }

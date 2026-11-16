@@ -17,14 +17,23 @@ public sealed class ApplicationException extends RuntimeException
 
     private final int statusCode;
 
+    // Flexible constructor bodies (JEP 513): the status is validated and the field assigned
+    // in the prologue, before super(...) runs — no half-built exception is ever created.
     public ApplicationException(String message, int statusCode) {
+        this.statusCode = requireErrorStatus(statusCode);
         super(message);
-        this.statusCode = statusCode;
     }
 
     public ApplicationException(String message, Throwable cause, int statusCode) {
+        this.statusCode = requireErrorStatus(statusCode);
         super(message, cause);
-        this.statusCode = statusCode;
+    }
+
+    private static int requireErrorStatus(int statusCode) {
+        if (statusCode < 400 || statusCode > 599) {
+            throw new IllegalArgumentException("statusCode must be an HTTP error status (4xx/5xx), got " + statusCode);
+        }
+        return statusCode;
     }
 
     /** HTTP status code this exception maps to in the REST response (e.g. 500, 400). */

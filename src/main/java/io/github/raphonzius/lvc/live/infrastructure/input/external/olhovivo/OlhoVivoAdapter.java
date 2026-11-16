@@ -1,8 +1,10 @@
 package io.github.raphonzius.lvc.live.infrastructure.input.external.olhovivo;
 
+import io.github.raphonzius.lvc.live.domain.FetchResult;
 import io.github.raphonzius.lvc.live.domain.bus.BusLine;
 import io.github.raphonzius.lvc.live.domain.bus.OlhoVivoPort;
 import io.github.raphonzius.lvc.live.domain.bus.VehiclePosition;
+import io.github.raphonzius.lvc.live.infrastructure.input.external.UpstreamTelemetry;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,31 +23,34 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OlhoVivoAdapter implements OlhoVivoPort {
 
+    private static final String API = "olhovivo";
+
     private final OlhoVivoFeignClient feignClient;
+    private final UpstreamTelemetry telemetry;
 
     @Override
     @CircuitBreaker(name = "olhovivo-api", fallbackMethod = "searchLinesFallback")
-    public List<BusLine.LineData> searchLines(String terms) {
+    public FetchResult<List<BusLine.LineData>> searchLines(String terms) {
         log.debug("Searching OlhoVivo lines: terms={}", terms);
-        return feignClient.searchLines(terms);
+        var lines = feignClient.searchLines(terms);
+        return FetchResult.of(lines == null ? List.of() : lines);
     }
 
-    /** Circuit breaker fallback for {@link #searchLines} — returns empty list. */
-    public List<BusLine.LineData> searchLinesFallback(String terms, Exception ex) {
-        log.warn("OlhoVivo searchLines circuit open: terms={}", terms, ex);
-        return BusLine.LineData.empty();
+    /** Circuit breaker fallback for {@link #searchLines} — {@code Unavailable}, not an empty list. */
+    public FetchResult<List<BusLine.LineData>> searchLinesFallback(String terms, Exception ex) {
+        return FetchResult.unavailable(telemetry.fallback(API, ex));
     }
 
     @Override
     @CircuitBreaker(name = "olhovivo-api", fallbackMethod = "positionsByLineFallback")
-    public VehiclePosition.PositionResponse positionsByLine(int lineCode) {
+    public FetchResult<VehiclePosition.PositionResponse> positionsByLine(int lineCode) {
         log.debug("Fetching OlhoVivo positions for lineCode={}", lineCode);
-        return feignClient.positionsByLine(lineCode);
+        var positions = feignClient.positionsByLine(lineCode);
+        return FetchResult.of(positions);
     }
 
-    /** Circuit breaker fallback for {@link #positionsByLine} — returns empty response. */
-    public VehiclePosition.PositionResponse positionsByLineFallback(int lineCode, Exception ex) {
-        log.warn("OlhoVivo positionsByLine circuit open: lineCode={}", lineCode, ex);
-        return VehiclePosition.PositionResponse.empty();
+    /** Circuit breaker fallback for {@link #positionsByLine} — {@code Unavailable}, not an empty response. */
+    public FetchResult<VehiclePosition.PositionResponse> positionsByLineFallback(int lineCode, Exception ex) {
+        return FetchResult.unavailable(telemetry.fallback(API, ex));
     }
 }

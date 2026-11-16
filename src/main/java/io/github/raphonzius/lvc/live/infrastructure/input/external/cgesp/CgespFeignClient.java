@@ -10,11 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  *
  * <p>Base URL: <a href="https://www.cgesp.org">https://www.cgesp.org</a></p>
  */
-@FeignClient(
-        name = "cgesp-api",
-        url = "https://www.cgesp.org",
-        configuration = CgespFeignConfiguration.class
-)
+@FeignClient(name = "cgesp-api", configuration = CgespFeignConfiguration.class)
 public interface CgespFeignClient {
 
     /**

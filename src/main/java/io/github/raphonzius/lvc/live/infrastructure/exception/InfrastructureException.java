@@ -2,6 +2,8 @@ package io.github.raphonzius.lvc.live.infrastructure.exception;
 
 import org.springframework.http.HttpStatus;
 
+import java.util.Objects;
+
 /**
  * Root of the infrastructure exception hierarchy.
  * Thrown when an infrastructure adapter fails to communicate with an external system.
@@ -11,21 +13,22 @@ import org.springframework.http.HttpStatus;
  * Adding a new sealed subtype automatically forces it to supply its own response status.</p>
  *
  * <p>Sealed — permitted subtypes: {@link AisApiException}, {@link CgespApiException},
- * {@link OlhoVivoApiException}.</p>
+ * {@link OlhoVivoApiException}, {@link OlhoVivoAuthenticationException}.</p>
  */
 public sealed class InfrastructureException extends RuntimeException
-        permits AisApiException, CgespApiException, OlhoVivoApiException {
+        permits AisApiException, CgespApiException, OlhoVivoApiException, OlhoVivoAuthenticationException {
 
     private final HttpStatus httpStatus;
 
+    // Flexible constructor bodies (JEP 513): validate and assign before super(...).
     public InfrastructureException(String message, HttpStatus httpStatus) {
+        this.httpStatus = Objects.requireNonNull(httpStatus, "httpStatus");
         super(message);
-        this.httpStatus = httpStatus;
     }
 
     public InfrastructureException(String message, Throwable cause, HttpStatus httpStatus) {
+        this.httpStatus = Objects.requireNonNull(httpStatus, "httpStatus");
         super(message, cause);
-        this.httpStatus = httpStatus;
     }
 
     /** HTTP status this exception maps to in the REST response. */
