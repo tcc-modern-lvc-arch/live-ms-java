@@ -1,0 +1,391 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-11-14T15:38:49.356Z  INFO 5297 --- [live-ms-java] [           main] [] i.g.raphonzius.lvc.live.LiveApplication  : Starting LiveApplication v0.0.1-SNAPSHOT using Java 25.0.5 with PID 5297 (/home/user/live-ms-java/bench/work/spring-aot/live-ms-java.jar started by root in /home/user/live-ms-java/bench/work/spring-aot)
+2026-11-14T15:38:49.357Z  INFO 5297 --- [live-ms-java] [           main] [] i.g.raphonzius.lvc.live.LiveApplication  : No active profile set, falling back to 1 default profile: "default"
+2026-11-14T15:38:50.391Z  INFO 5297 --- [live-ms-java] [           main] [] o.s.cloud.context.scope.GenericScope     : BeanFactory id=adfcb3f8-7683-33df-a8e2-63b063b32797
+2026-11-14T15:38:50.608Z  INFO 5297 --- [live-ms-java] [           main] [] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-11-14T15:38:50.615Z  INFO 5297 --- [live-ms-java] [           main] [] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-11-14T15:38:50.616Z  INFO 5297 --- [live-ms-java] [           main] [] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.27]
+2026-11-14T15:38:50.621Z  INFO 5297 --- [live-ms-java] [           main] [] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 1212 ms
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::loadLibrary has been called by io.grpc.netty.shaded.io.netty.util.internal.NativeLibraryUtil in an unnamed module (file:/home/user/live-ms-java/bench/work/spring-aot/lib/grpc-netty-shaded-1.85.1.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+2026-11-14T15:38:52.225Z  INFO 5297 --- [live-ms-java] [           main] [] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-11-14T15:38:52.293Z  INFO 5297 --- [live-ms-java] [           main] [] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8080 (http) with context path '/'
+2026-11-14T15:38:52.331Z  INFO 5297 --- [live-ms-java] [           main] [] i.g.raphonzius.lvc.live.LiveApplication  : Started LiveApplication in 3.369 seconds (process running for 3.985)
+2026-11-14T15:38:52.341Z  INFO 5297 --- [live-ms-java] [   scheduling-1] [6d9b35bcdfc8] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:38:52.403Z  INFO 5297 --- [live-ms-java] [omcat-handler-0] [] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-11-14T15:38:52.408Z  INFO 5297 --- [live-ms-java] [omcat-handler-0] [] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-11-14T15:38:52.410Z  INFO 5297 --- [live-ms-java] [omcat-handler-0] [] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2026-11-14T15:38:53.118Z  INFO 5297 --- [live-ms-java] [   scheduling-1] [6d9b35bcdfc8] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:38:53.118Z  INFO 5297 --- [live-ms-java] [   scheduling-1] [6d9b35bcdfc8] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:38:56.840Z  INFO 5297 --- [live-ms-java] [   scheduling-1] [6d9b35bcdfc8] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 3677 ms
+2026-11-14T15:38:57.828Z  INFO 5297 --- [live-ms-java] [omcat-handler-2] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:38:57.829Z  INFO 5297 --- [live-ms-java] [omcat-handler-2] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:38:57.925Z  INFO 5297 --- [live-ms-java] [omcat-handler-2] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:38:57.925Z  INFO 5297 --- [live-ms-java] [omcat-handler-2] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:38:58.809Z ERROR 5297 --- [live-ms-java] [   scheduling-1] [c0ff0a9eaeab] i.g.r.l.l.i.scheduler.PollingJobRunner   : [cgesp] polling cycle failed after 1964 ms
+
+feign.RetryableException: (certificate_unknown) No subject alternative DNS name matching www.cgesp.org found. executing GET https://www.cgesp.org/v3/alagamentos.jsp?dataBusca=14/11/2026&enviaBusca=Buscar
+	at feign.FeignException.errorExecuting(FeignException.java:300) ~[feign-core-13.6.1.jar:na]
+	at feign.SynchronousMethodHandler.executeAndDecode(SynchronousMethodHandler.java:105) ~[feign-core-13.6.1.jar:na]
+	at feign.SynchronousMethodHandler.invoke(SynchronousMethodHandler.java:53) ~[feign-core-13.6.1.jar:na]
+	at feign.ReflectiveFeign$FeignInvocationHandler.invoke(ReflectiveFeign.java:104) ~[feign-core-13.6.1.jar:na]
+	at jdk.proxy2/jdk.proxy2.$Proxy111.fetchFloodingsHtml(Unknown Source) ~[na:na]
+	at io.github.raphonzius.lvc.live.infrastructure.input.external.cgesp.CgespAdapter.fetchFloodings(CgespAdapter.java:57) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at io.github.raphonzius.lvc.live.application.service.CgespService.fetchAndStreamFloodings(CgespService.java:46) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at io.github.raphonzius.lvc.live.infrastructure.scheduler.CgespPollingScheduler.poll(CgespPollingScheduler.java:34) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at io.github.raphonzius.lvc.live.infrastructure.scheduler.PollingJobRunner.timed(PollingJobRunner.java:58) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at io.github.raphonzius.lvc.live.infrastructure.scheduler.PollingJobRunner.lambda$run$0(PollingJobRunner.java:49) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at io.github.raphonzius.lvc.live.infrastructure.observability.CorrelationId.lambda$runWith$0(CorrelationId.java:48) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at java.base/jdk.internal.vm.ScopedValueContainer.runWithoutScope(ScopedValueContainer.java:112) ~[na:na]
+	at java.base/jdk.internal.vm.ScopedValueContainer.run(ScopedValueContainer.java:98) ~[na:na]
+	at java.base/java.lang.ScopedValue$Carrier.run(ScopedValue.java:466) ~[na:na]
+	at io.github.raphonzius.lvc.live.infrastructure.observability.CorrelationId.runWith(CorrelationId.java:44) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at io.github.raphonzius.lvc.live.infrastructure.scheduler.PollingJobRunner.run(PollingJobRunner.java:49) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at io.github.raphonzius.lvc.live.infrastructure.scheduler.CgespPollingScheduler.pollFloodings(CgespPollingScheduler.java:24) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565) ~[na:na]
+	at org.springframework.scheduling.support.ScheduledMethodRunnable.runInternal(ScheduledMethodRunnable.java:128) ~[spring-context-7.0.10.jar:7.0.10]
+	at org.springframework.scheduling.support.ScheduledMethodRunnable.lambda$run$1(ScheduledMethodRunnable.java:122) ~[spring-context-7.0.10.jar:7.0.10]
+	at io.micrometer.observation.Observation.observe(Observation.java:569) ~[micrometer-observation-1.17.2.jar:1.17.2]
+	at org.springframework.scheduling.support.ScheduledMethodRunnable.run(ScheduledMethodRunnable.java:122) ~[spring-context-7.0.10.jar:7.0.10]
+	at org.springframework.scheduling.config.Task$OutcomeTrackingRunnable.run(Task.java:88) ~[spring-context-7.0.10.jar:7.0.10]
+	at org.springframework.scheduling.support.DelegatingErrorHandlingRunnable.run(DelegatingErrorHandlingRunnable.java:54) ~[spring-context-7.0.10.jar:7.0.10]
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545) ~[na:na]
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:369) ~[na:na]
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:310) ~[na:na]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[na:na]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[na:na]
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:460) ~[na:na]
+Caused by: javax.net.ssl.SSLHandshakeException: (certificate_unknown) No subject alternative DNS name matching www.cgesp.org found.
+	at java.base/sun.security.ssl.Alert.createSSLException(Alert.java:130) ~[na:na]
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:376) ~[na:na]
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:319) ~[na:na]
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:314) ~[na:na]
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.checkServerCerts(CertificateMessage.java:1295) ~[na:na]
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.onConsumeCertificate(CertificateMessage.java:1172) ~[na:na]
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.consume(CertificateMessage.java:1115) ~[na:na]
+	at java.base/sun.security.ssl.SSLHandshake.consume(SSLHandshake.java:421) ~[na:na]
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:477) ~[na:na]
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:448) ~[na:na]
+	at java.base/sun.security.ssl.TransportContext.dispatch(TransportContext.java:199) ~[na:na]
+	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:172) ~[na:na]
+	at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1506) ~[na:na]
+	at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1421) ~[na:na]
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:455) ~[na:na]
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:426) ~[na:na]
+	at java.base/sun.net.www.protocol.https.HttpsClient.afterConnect(HttpsClient.java:490) ~[na:na]
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:190) ~[na:na]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1380) ~[na:na]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1306) ~[na:na]
+	at java.base/java.net.HttpURLConnection.getResponseCode(HttpURLConnection.java:493) ~[na:na]
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.getResponseCode(HttpsURLConnectionImpl.java:307) ~[na:na]
+	at feign.Client$Default.convertResponse(Client.java:114) ~[feign-core-13.6.1.jar:na]
+	at feign.Client$Default.execute(Client.java:110) ~[feign-core-13.6.1.jar:na]
+	at feign.SynchronousMethodHandler.executeAndDecode(SynchronousMethodHandler.java:92) ~[feign-core-13.6.1.jar:na]
+	... 29 common frames omitted
+Caused by: java.security.cert.CertificateException: No subject alternative DNS name matching www.cgesp.org found.
+	at java.base/sun.security.util.HostnameChecker.matchDNS(HostnameChecker.java:211) ~[na:na]
+	at java.base/sun.security.util.HostnameChecker.match(HostnameChecker.java:103) ~[na:na]
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkIdentity(X509TrustManagerImpl.java:466) ~[na:na]
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkIdentity(X509TrustManagerImpl.java:417) ~[na:na]
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkTrusted(X509TrustManagerImpl.java:237) ~[na:na]
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkServerTrusted(X509TrustManagerImpl.java:132) ~[na:na]
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.checkServerCerts(CertificateMessage.java:1279) ~[na:na]
+	... 49 common frames omitted
+
+2026-11-14T15:38:58.820Z  INFO 5297 --- [live-ms-java] [   scheduling-1] [5293d5e3795b] .g.r.l.l.i.i.e.o.OlhoVivoAuthInterceptor : Authenticating with OlhoVivo API...
+2026-11-14T15:38:58.929Z ERROR 5297 --- [live-ms-java] [   scheduling-1] [5293d5e3795b] .g.r.l.l.i.i.e.o.OlhoVivoAuthInterceptor : OlhoVivo authentication request failed
+
+org.springframework.web.client.ResourceAccessException: I/O error on POST request for "https://api.olhovivo.sptrans.com.br/v2.1/Login/Autenticar": (certificate_unknown) No subject alternative DNS name matching api.olhovivo.sptrans.com.br found.
+	at org.springframework.web.client.DefaultRestClient$DefaultRequestBodyUriSpec.createResourceAccessException(DefaultRestClient.java:779) ~[spring-web-7.0.10.jar:7.0.10]
+	at org.springframework.web.client.DefaultRestClient$DefaultRequestBodyUriSpec.exchangeInternal(DefaultRestClient.java:624) ~[spring-web-7.0.10.jar:7.0.10]
+	at org.springframework.web.client.DefaultRestClient$DefaultRequestBodyUriSpec.exchange(DefaultRestClient.java:572) ~[spring-web-7.0.10.jar:7.0.10]
+	at org.springframework.web.client.RestClient$RequestHeadersSpec.exchange(RestClient.java:747) ~[spring-web-7.0.10.jar:7.0.10]
+	at org.springframework.web.client.DefaultRestClient$DefaultResponseSpec.executeAndExtract(DefaultRestClient.java:924) ~[spring-web-7.0.10.jar:7.0.10]
+	at org.springframework.web.client.DefaultRestClient$DefaultResponseSpec.toEntityInternal(DefaultRestClient.java:870) ~[spring-web-7.0.10.jar:7.0.10]
+	at org.springframework.web.client.DefaultRestClient$DefaultResponseSpec.toEntity(DefaultRestClient.java:859) ~[spring-web-7.0.10.jar:7.0.10]
+	at io.github.raphonzius.lvc.live.infrastructure.input.external.olhovivo.OlhoVivoAuthInterceptor.authenticate(OlhoVivoAuthInterceptor.java:69) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at io.github.raphonzius.lvc.live.infrastructure.input.external.olhovivo.OlhoVivoAuthInterceptor.apply(OlhoVivoAuthInterceptor.java:41) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at feign.SynchronousMethodHandler.targetRequest(SynchronousMethodHandler.java:120) ~[feign-core-13.6.1.jar:na]
+	at feign.SynchronousMethodHandler.executeAndDecode(SynchronousMethodHandler.java:78) ~[feign-core-13.6.1.jar:na]
+	at feign.SynchronousMethodHandler.invoke(SynchronousMethodHandler.java:53) ~[feign-core-13.6.1.jar:na]
+	at feign.ReflectiveFeign$FeignInvocationHandler.invoke(ReflectiveFeign.java:104) ~[feign-core-13.6.1.jar:na]
+	at jdk.proxy2/jdk.proxy2.$Proxy112.searchLines(Unknown Source) ~[na:na]
+	at io.github.raphonzius.lvc.live.infrastructure.input.external.olhovivo.OlhoVivoAdapter.searchLines(OlhoVivoAdapter.java:30) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at io.github.raphonzius.lvc.live.application.service.OlhoVivoService.lambda$fetchAndStreamVehiclePositions$0(OlhoVivoService.java:46) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at java.base/java.util.stream.ReferencePipeline$7$1FlatMap.accept(ReferencePipeline.java:288) ~[na:na]
+	at java.base/java.util.Iterator.forEachRemaining(Iterator.java:133) ~[na:na]
+	at java.base/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1939) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:570) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:560) ~[na:na]
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:153) ~[na:na]
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:176) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:265) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:632) ~[na:na]
+	at io.github.raphonzius.lvc.live.application.service.OlhoVivoService.fetchAndStreamVehiclePositions(OlhoVivoService.java:58) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at io.github.raphonzius.lvc.live.infrastructure.scheduler.OlhoVivoPollingScheduler.poll(OlhoVivoPollingScheduler.java:34) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at io.github.raphonzius.lvc.live.infrastructure.scheduler.PollingJobRunner.timed(PollingJobRunner.java:58) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at io.github.raphonzius.lvc.live.infrastructure.scheduler.PollingJobRunner.lambda$run$0(PollingJobRunner.java:49) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at io.github.raphonzius.lvc.live.infrastructure.observability.CorrelationId.lambda$runWith$0(CorrelationId.java:48) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at java.base/jdk.internal.vm.ScopedValueContainer.runWithoutScope(ScopedValueContainer.java:112) ~[na:na]
+	at java.base/jdk.internal.vm.ScopedValueContainer.run(ScopedValueContainer.java:98) ~[na:na]
+	at java.base/java.lang.ScopedValue$Carrier.run(ScopedValue.java:466) ~[na:na]
+	at io.github.raphonzius.lvc.live.infrastructure.observability.CorrelationId.runWith(CorrelationId.java:44) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at io.github.raphonzius.lvc.live.infrastructure.scheduler.PollingJobRunner.run(PollingJobRunner.java:49) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at io.github.raphonzius.lvc.live.infrastructure.scheduler.OlhoVivoPollingScheduler.pollVehiclePositions(OlhoVivoPollingScheduler.java:24) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565) ~[na:na]
+	at org.springframework.scheduling.support.ScheduledMethodRunnable.runInternal(ScheduledMethodRunnable.java:128) ~[spring-context-7.0.10.jar:7.0.10]
+	at org.springframework.scheduling.support.ScheduledMethodRunnable.lambda$run$1(ScheduledMethodRunnable.java:122) ~[spring-context-7.0.10.jar:7.0.10]
+	at io.micrometer.observation.Observation.observe(Observation.java:569) ~[micrometer-observation-1.17.2.jar:1.17.2]
+	at org.springframework.scheduling.support.ScheduledMethodRunnable.run(ScheduledMethodRunnable.java:122) ~[spring-context-7.0.10.jar:7.0.10]
+	at org.springframework.scheduling.config.Task$OutcomeTrackingRunnable.run(Task.java:88) ~[spring-context-7.0.10.jar:7.0.10]
+	at org.springframework.scheduling.support.DelegatingErrorHandlingRunnable.run(DelegatingErrorHandlingRunnable.java:54) ~[spring-context-7.0.10.jar:7.0.10]
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545) ~[na:na]
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:369) ~[na:na]
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:310) ~[na:na]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[na:na]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[na:na]
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:460) ~[na:na]
+Caused by: javax.net.ssl.SSLHandshakeException: (certificate_unknown) No subject alternative DNS name matching api.olhovivo.sptrans.com.br found.
+	at java.base/sun.security.ssl.Alert.createSSLException(Alert.java:130) ~[na:na]
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:376) ~[na:na]
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:319) ~[na:na]
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:314) ~[na:na]
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.checkServerCerts(CertificateMessage.java:1295) ~[na:na]
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.onConsumeCertificate(CertificateMessage.java:1172) ~[na:na]
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.consume(CertificateMessage.java:1115) ~[na:na]
+	at java.base/sun.security.ssl.SSLHandshake.consume(SSLHandshake.java:421) ~[na:na]
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:477) ~[na:na]
+	at java.base/sun.security.ssl.SSLEngineImpl$DelegatedTask.run(SSLEngineImpl.java:1207) ~[na:na]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604) ~[na:na]
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate.lambda$executeTasks$0(SSLFlowDelegate.java:1156) ~[java.net.http:na]
+	at java.net.http/jdk.internal.net.http.HttpClientImpl$DelegatingExecutor.execute(HttpClientImpl.java:168) ~[java.net.http:na]
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate.executeTasks(SSLFlowDelegate.java:1151) ~[java.net.http:na]
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate.doHandshake(SSLFlowDelegate.java:1117) ~[java.net.http:na]
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate$Reader.processData(SSLFlowDelegate.java:513) ~[java.net.http:na]
+	at java.net.http/jdk.internal.net.http.common.SSLFlowDelegate$Reader$ReaderDownstreamPusher.run(SSLFlowDelegate.java:283) ~[java.net.http:na]
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$LockingRestartableTask.run(SequentialScheduler.java:182) ~[java.net.http:na]
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$CompleteRestartableTask.run(SequentialScheduler.java:149) ~[java.net.http:na]
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$TryEndDeferredCompleter.complete(SequentialScheduler.java:324) ~[java.net.http:na]
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$CompleteRestartableTask.run(SequentialScheduler.java:151) ~[java.net.http:na]
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$SchedulableTask.run(SequentialScheduler.java:207) ~[java.net.http:na]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[na:na]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[na:na]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[na:na]
+Caused by: java.security.cert.CertificateException: No subject alternative DNS name matching api.olhovivo.sptrans.com.br found.
+	at java.base/sun.security.util.HostnameChecker.matchDNS(HostnameChecker.java:211) ~[na:na]
+	at java.base/sun.security.util.HostnameChecker.match(HostnameChecker.java:103) ~[na:na]
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkIdentity(X509TrustManagerImpl.java:466) ~[na:na]
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkIdentity(X509TrustManagerImpl.java:417) ~[na:na]
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkTrusted(X509TrustManagerImpl.java:291) ~[na:na]
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkServerTrusted(X509TrustManagerImpl.java:144) ~[na:na]
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.checkServerCerts(CertificateMessage.java:1273) ~[na:na]
+	... 20 common frames omitted
+
+2026-11-14T15:38:58.944Z ERROR 5297 --- [live-ms-java] [   scheduling-1] [5293d5e3795b] i.g.r.l.l.i.scheduler.PollingJobRunner   : [olhovivo] polling cycle failed after 126 ms
+
+feign.RetryableException: (certificate_unknown) No subject alternative DNS name matching api.olhovivo.sptrans.com.br found. executing GET https://api.olhovivo.sptrans.com.br/v2.1/Linha/Buscar?termosBusca=178L
+	at feign.FeignException.errorExecuting(FeignException.java:300) ~[feign-core-13.6.1.jar:na]
+	at feign.SynchronousMethodHandler.executeAndDecode(SynchronousMethodHandler.java:105) ~[feign-core-13.6.1.jar:na]
+	at feign.SynchronousMethodHandler.invoke(SynchronousMethodHandler.java:53) ~[feign-core-13.6.1.jar:na]
+	at feign.ReflectiveFeign$FeignInvocationHandler.invoke(ReflectiveFeign.java:104) ~[feign-core-13.6.1.jar:na]
+	at jdk.proxy2/jdk.proxy2.$Proxy112.searchLines(Unknown Source) ~[na:na]
+	at io.github.raphonzius.lvc.live.infrastructure.input.external.olhovivo.OlhoVivoAdapter.searchLines(OlhoVivoAdapter.java:30) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at io.github.raphonzius.lvc.live.application.service.OlhoVivoService.lambda$fetchAndStreamVehiclePositions$0(OlhoVivoService.java:46) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at java.base/java.util.stream.ReferencePipeline$7$1FlatMap.accept(ReferencePipeline.java:288) ~[na:na]
+	at java.base/java.util.Iterator.forEachRemaining(Iterator.java:133) ~[na:na]
+	at java.base/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1939) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:570) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:560) ~[na:na]
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:153) ~[na:na]
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:176) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:265) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:632) ~[na:na]
+	at io.github.raphonzius.lvc.live.application.service.OlhoVivoService.fetchAndStreamVehiclePositions(OlhoVivoService.java:58) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at io.github.raphonzius.lvc.live.infrastructure.scheduler.OlhoVivoPollingScheduler.poll(OlhoVivoPollingScheduler.java:34) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at io.github.raphonzius.lvc.live.infrastructure.scheduler.PollingJobRunner.timed(PollingJobRunner.java:58) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at io.github.raphonzius.lvc.live.infrastructure.scheduler.PollingJobRunner.lambda$run$0(PollingJobRunner.java:49) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at io.github.raphonzius.lvc.live.infrastructure.observability.CorrelationId.lambda$runWith$0(CorrelationId.java:48) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at java.base/jdk.internal.vm.ScopedValueContainer.runWithoutScope(ScopedValueContainer.java:112) ~[na:na]
+	at java.base/jdk.internal.vm.ScopedValueContainer.run(ScopedValueContainer.java:98) ~[na:na]
+	at java.base/java.lang.ScopedValue$Carrier.run(ScopedValue.java:466) ~[na:na]
+	at io.github.raphonzius.lvc.live.infrastructure.observability.CorrelationId.runWith(CorrelationId.java:44) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at io.github.raphonzius.lvc.live.infrastructure.scheduler.PollingJobRunner.run(PollingJobRunner.java:49) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at io.github.raphonzius.lvc.live.infrastructure.scheduler.OlhoVivoPollingScheduler.pollVehiclePositions(OlhoVivoPollingScheduler.java:24) ~[live-ms-java.jar:0.0.1-SNAPSHOT]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565) ~[na:na]
+	at org.springframework.scheduling.support.ScheduledMethodRunnable.runInternal(ScheduledMethodRunnable.java:128) ~[spring-context-7.0.10.jar:7.0.10]
+	at org.springframework.scheduling.support.ScheduledMethodRunnable.lambda$run$1(ScheduledMethodRunnable.java:122) ~[spring-context-7.0.10.jar:7.0.10]
+	at io.micrometer.observation.Observation.observe(Observation.java:569) ~[micrometer-observation-1.17.2.jar:1.17.2]
+	at org.springframework.scheduling.support.ScheduledMethodRunnable.run(ScheduledMethodRunnable.java:122) ~[spring-context-7.0.10.jar:7.0.10]
+	at org.springframework.scheduling.config.Task$OutcomeTrackingRunnable.run(Task.java:88) ~[spring-context-7.0.10.jar:7.0.10]
+	at org.springframework.scheduling.support.DelegatingErrorHandlingRunnable.run(DelegatingErrorHandlingRunnable.java:54) ~[spring-context-7.0.10.jar:7.0.10]
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545) ~[na:na]
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:369) ~[na:na]
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:310) ~[na:na]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[na:na]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[na:na]
+	at java.base/java.lang.VirtualThread.run(VirtualThread.java:460) ~[na:na]
+Caused by: javax.net.ssl.SSLHandshakeException: (certificate_unknown) No subject alternative DNS name matching api.olhovivo.sptrans.com.br found.
+	at java.base/sun.security.ssl.Alert.createSSLException(Alert.java:130) ~[na:na]
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:376) ~[na:na]
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:319) ~[na:na]
+	at java.base/sun.security.ssl.TransportContext.fatal(TransportContext.java:314) ~[na:na]
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.checkServerCerts(CertificateMessage.java:1295) ~[na:na]
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.onConsumeCertificate(CertificateMessage.java:1172) ~[na:na]
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.consume(CertificateMessage.java:1115) ~[na:na]
+	at java.base/sun.security.ssl.SSLHandshake.consume(SSLHandshake.java:421) ~[na:na]
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:477) ~[na:na]
+	at java.base/sun.security.ssl.HandshakeContext.dispatch(HandshakeContext.java:448) ~[na:na]
+	at java.base/sun.security.ssl.TransportContext.dispatch(TransportContext.java:199) ~[na:na]
+	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:172) ~[na:na]
+	at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1506) ~[na:na]
+	at java.base/sun.security.ssl.SSLSocketImpl.readHandshakeRecord(SSLSocketImpl.java:1421) ~[na:na]
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:455) ~[na:na]
+	at java.base/sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:426) ~[na:na]
+	at java.base/sun.net.www.protocol.https.HttpsClient.afterConnect(HttpsClient.java:490) ~[na:na]
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:190) ~[na:na]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1380) ~[na:na]
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1306) ~[na:na]
+	at java.base/java.net.HttpURLConnection.getResponseCode(HttpURLConnection.java:493) ~[na:na]
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.getResponseCode(HttpsURLConnectionImpl.java:307) ~[na:na]
+	at feign.Client$Default.convertResponse(Client.java:114) ~[feign-core-13.6.1.jar:na]
+	at feign.Client$Default.execute(Client.java:110) ~[feign-core-13.6.1.jar:na]
+	at feign.SynchronousMethodHandler.executeAndDecode(SynchronousMethodHandler.java:92) ~[feign-core-13.6.1.jar:na]
+	... 39 common frames omitted
+Caused by: java.security.cert.CertificateException: No subject alternative DNS name matching api.olhovivo.sptrans.com.br found.
+	at java.base/sun.security.util.HostnameChecker.matchDNS(HostnameChecker.java:211) ~[na:na]
+	at java.base/sun.security.util.HostnameChecker.match(HostnameChecker.java:103) ~[na:na]
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkIdentity(X509TrustManagerImpl.java:466) ~[na:na]
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkIdentity(X509TrustManagerImpl.java:417) ~[na:na]
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkTrusted(X509TrustManagerImpl.java:237) ~[na:na]
+	at java.base/sun.security.ssl.X509TrustManagerImpl.checkServerTrusted(X509TrustManagerImpl.java:132) ~[na:na]
+	at java.base/sun.security.ssl.CertificateMessage$T13CertificateConsumer.checkServerCerts(CertificateMessage.java:1279) ~[na:na]
+	... 59 common frames omitted
+
+2026-11-14T15:38:59.702Z  INFO 5297 --- [live-ms-java] [omcat-handler-2] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 1773 ms
+2026-11-14T15:38:59.708Z  INFO 5297 --- [live-ms-java] [omcat-handler-2] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:38:59.708Z  INFO 5297 --- [live-ms-java] [omcat-handler-2] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:38:59.753Z  INFO 5297 --- [live-ms-java] [omcat-handler-2] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:38:59.754Z  INFO 5297 --- [live-ms-java] [omcat-handler-2] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:39:00.946Z  INFO 5297 --- [live-ms-java] [omcat-handler-2] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 1190 ms
+2026-11-14T15:39:00.949Z  INFO 5297 --- [live-ms-java] [omcat-handler-2] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:39:00.949Z  INFO 5297 --- [live-ms-java] [omcat-handler-2] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:39:00.989Z  INFO 5297 --- [live-ms-java] [omcat-handler-2] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:39:00.989Z  INFO 5297 --- [live-ms-java] [omcat-handler-2] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:39:01.913Z  INFO 5297 --- [live-ms-java] [omcat-handler-2] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 922 ms
+2026-11-14T15:39:01.918Z  INFO 5297 --- [live-ms-java] [omcat-handler-3] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:39:01.918Z  INFO 5297 --- [live-ms-java] [omcat-handler-3] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:39:01.954Z  INFO 5297 --- [live-ms-java] [omcat-handler-3] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:39:01.954Z  INFO 5297 --- [live-ms-java] [omcat-handler-3] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:39:02.556Z  INFO 5297 --- [live-ms-java] [omcat-handler-3] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 599 ms
+2026-11-14T15:39:02.558Z  INFO 5297 --- [live-ms-java] [omcat-handler-3] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:39:02.558Z  INFO 5297 --- [live-ms-java] [omcat-handler-3] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:39:02.594Z  INFO 5297 --- [live-ms-java] [omcat-handler-3] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:39:02.595Z  INFO 5297 --- [live-ms-java] [omcat-handler-3] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:39:03.134Z  INFO 5297 --- [live-ms-java] [omcat-handler-3] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 535 ms
+2026-11-14T15:39:03.137Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:39:03.138Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:39:03.165Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:39:03.165Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:39:03.734Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 566 ms
+2026-11-14T15:39:03.737Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:39:03.737Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:39:03.770Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:39:03.771Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:39:04.254Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 480 ms
+2026-11-14T15:39:04.257Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:39:04.257Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:39:04.302Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:39:04.302Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:39:04.892Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 588 ms
+2026-11-14T15:39:04.895Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:39:04.895Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:39:04.933Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:39:04.934Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:39:05.422Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 487 ms
+2026-11-14T15:39:05.425Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:39:05.425Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:39:05.450Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:39:05.450Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:39:05.895Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 444 ms
+2026-11-14T15:39:05.897Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:39:05.897Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:39:05.927Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:39:05.927Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:39:06.358Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 429 ms
+2026-11-14T15:39:06.361Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:39:06.362Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:39:06.406Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:39:06.406Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:39:06.845Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 438 ms
+2026-11-14T15:39:06.847Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:39:06.848Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:39:06.882Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:39:06.883Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:39:07.283Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 399 ms
+2026-11-14T15:39:07.286Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:39:07.286Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:39:07.308Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:39:07.308Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:39:07.658Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 348 ms
+2026-11-14T15:39:07.660Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:39:07.661Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:39:07.673Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:39:07.673Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:39:08.075Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 401 ms
+2026-11-14T15:39:08.078Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:39:08.079Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:39:08.099Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:39:08.099Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:39:08.487Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 387 ms
+2026-11-14T15:39:08.489Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:39:08.490Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:39:08.500Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:39:08.500Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:39:08.917Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 416 ms
+2026-11-14T15:39:08.919Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:39:08.920Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:39:08.933Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:39:08.933Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:39:09.330Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 395 ms
+2026-11-14T15:39:09.332Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:39:09.333Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:39:09.350Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:39:09.351Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:39:09.836Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 484 ms
+2026-11-14T15:39:09.842Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:39:09.842Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:39:09.863Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:39:09.863Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:39:10.276Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 411 ms
+2026-11-14T15:39:10.278Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:39:10.279Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:39:10.290Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:39:10.290Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:39:10.722Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 431 ms
+2026-11-14T15:39:10.725Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:39:10.725Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:39:10.745Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:39:10.746Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:39:11.091Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 344 ms
+2026-11-14T15:39:11.096Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.a.web.VesselController       : REST: manual AIS poll triggered
+2026-11-14T15:39:11.096Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Fetching vessels from AIS API - Box: (-49.0,-28.5)-(-35.0,-22.5), Zoom: 6
+2026-11-14T15:39:11.107Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.i.external.ais.AisAdapter    : Successfully fetched 2000 vessels from AIS API
+2026-11-14T15:39:11.107Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.a.service.AisService           : Streaming 2000 vessels to Event Hub
+2026-11-14T15:39:11.513Z  INFO 5297 --- [live-ms-java] [omcat-handler-4] [] i.g.r.l.l.i.output.grpc.EventPublisher   : [vessel] published 2000/2000 event(s) to EventHub in 405 ms
+2026-11-14T15:39:12.024Z  INFO 5297 --- [live-ms-java] [ionShutdownHook] [] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-11-14T15:39:12.027Z  INFO 5297 --- [live-ms-java] [tomcat-shutdown] [] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
